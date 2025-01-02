@@ -4,7 +4,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import ChatBotPage from "./container/home/ChatBotPage";
-import PdfExtractPage from "./container/home/PdfExtractPage";
+import DashBoardPage from "./container/admin/dashboard";
+import EditTicketPage from "./container/admin/components/EditTicketPage";
 
 const router = createBrowserRouter([
   {
@@ -16,8 +17,12 @@ const router = createBrowserRouter([
         element: <ChatBotPage />,
       },
       {
-        path: "/PdfExtractPage",
-        element: <PdfExtractPage />,
+        path: "/admin",
+        element: <DashBoardPage />,
+      },
+      {
+        path: "/admin/tickets/edit/:id",
+        element: <EditTicketPage />,
       },
     ],
   },

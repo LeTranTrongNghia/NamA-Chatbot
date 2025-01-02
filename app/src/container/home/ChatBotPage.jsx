@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import pdfToText from 'react-pdftotext';
 import { getDocument } from 'pdfjs-dist/build/pdf';
+import { Textarea } from '@/components/ui/textarea';
 
 const ChatBotPage = () => {
     const [message, setMessage] = useState('');
@@ -18,13 +19,34 @@ const ChatBotPage = () => {
     const [audioSrc, setAudioSrc] = useState(''); 
     const [uploadedFile, setUploadedFile] = useState(null);
     const [pdfText, setPdfText] = useState(''); 
-    const [basePdfText, setBasePdfText] = useState('');
+    const [existingPdfText, setExistingPdfText] = useState('');
 
     // API credentials and constants
-    const API_KEY_ID = "MmJdC2c14tNQn7qz"; 
-    const API_KEY_SECRET = "9K4Aa3gbpfDNy6Xz";
+    const API_KEY_ID = import.meta.env.VITE_SPEECHFLOW_API_KEY_ID; 
+    const API_KEY_SECRET = import.meta.env.VITE_SPEECHFLOW_API_KEY_SECRET;
     const LANG = "vi"; 
     const RESULT_TYPE = 4; 
+
+    // Load existing PDF text on component mount
+    useEffect(() => {
+        const loadExistingPdf = async () => {
+            const existingPdfFile = '/app/src/container/home/QnA_loi.pdf';
+            const pdf = await getDocument(existingPdfFile).promise;
+            const numPages = pdf.numPages;
+            let text = '';
+
+            for (let i = 1; i <= numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const pageText = content.items.map(item => item.str).join(' ');
+                text += pageText + ' ';
+            }
+
+            setExistingPdfText(text); // Set the extracted text
+        };
+
+        loadExistingPdf();
+    }, []);
 
     const handleAudioUpload = async (event) => { 
         const file = event.target.files[0];
@@ -120,11 +142,8 @@ const ChatBotPage = () => {
         setLoading(true); 
         const question = message; 
 
-        // Predefined PDF text to use as fallback
-        const fallbackPdfText = basePdfText || "This is the fallback PDF data that will be used if no PDF is uploaded.";
-
         let promptPrefix =
-            'As a professional customer service representative, provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to PDF or banking services, politely ask customer to send other request to help them with banking service issues. Always answer customer with Vietnamese and answer as politely as possible.';
+            'Act as a professional customer service employee for Nam Á Bank , provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to PDF or banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
 
         try {
             const response = await axios({
@@ -135,7 +154,7 @@ const ChatBotPage = () => {
                         {
                             parts: [
                                 {
-                                    text: `${promptPrefix} Analyze the following PDF text:\n\n${pdfText || fallbackPdfText}\nUser Question: ${question}`,
+                                    text: `${promptPrefix} Analyze the following PDF text:\n\n${existingPdfText}\nUser Question: ${question}`,
                                 },
                             ],
                         },
@@ -145,7 +164,10 @@ const ChatBotPage = () => {
 
             const answerText = response.data.candidates[0].content.parts[0].text;
 
-            const plainTextAnswer = answerText.replace(/<[^>]+>/g, '').replace(/\*\*(.*?)\*\*/g, '$1');
+            const plainTextAnswer = answerText
+                .replace(/<[^>]+>/g, '')
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/\*/g, '\n');
 
             setMessageHistory(prev => [
                 ...prev,
@@ -157,7 +179,7 @@ const ChatBotPage = () => {
                 ...prev,
                 {
                     type: 'answer',
-                    text: 'Sorry - Something went wrong. Please try again!',
+                    text: 'Có lỗi, xin vui lòng thử lại sau.',
                     background: 'bg-red-300',
                 },
             ]);
@@ -166,9 +188,59 @@ const ChatBotPage = () => {
         setLoading(false);
     };
 
+    const generateSummary = async (questionText) => {
+        try {
+            const response = await axios({
+                url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${import.meta.env.VITE_API_GENERATIVE_LANGUAGE_CLIENT}`,
+                method: 'post',
+                data: {
+                    contents: [{
+                        parts: [{
+                            text: `Summarize this question in Vietnamese in one short sentence, focusing on the main issue or request: "${questionText}"`
+                        }]
+                    }]
+                }
+            });
+
+            return response.data.candidates[0].content.parts[0].text;
+        } catch (error) {
+            console.error('Error generating summary:', error);
+            return questionText; // Fallback to original text if summary generation fails
+        }
+    };
+
+    const createNewTicket = async (questionText) => {
+        try {
+            // Remove newline characters from the question text
+            const sanitizedQuestionText = questionText.replace(/\n/g, ' ');
+            
+            // Generate summary using Gemini
+            const generatedSummary = await generateSummary(sanitizedQuestionText);
+            const sanitizedSummary = generatedSummary.replace(/\n/g, ' ');
+
+            const ticketData = {
+                tags: ["Lỗi"],
+                content: sanitizedQuestionText,
+                summary: sanitizedSummary,
+                creationTime: new Date().toISOString(),
+                status: "Todo",
+                priority: "Low",
+                responsibleTeam: null,
+                adminNotes: null
+            };
+
+            const response = await axios.post('http://localhost:5050/ticket', ticketData);
+            console.log('Ticket created:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error creating ticket:', error);
+            throw error;
+        }
+    };
+
     const handleSend = async (e) => {
         e.preventDefault();
-        let newMessage = ''; 
+        let newMessage = '';
 
         if (fileType === 'audio') {
             newMessage = `${audioMessage} ${message}`;
@@ -179,15 +251,26 @@ const ChatBotPage = () => {
             newMessage = `${message}`;
         }
 
-        setMessageHistory(prev => [...prev, { type: 'user', text: newMessage, background: 'bg-gray-100' }]);
+        // Create new ticket before adding message to history
+        try {
+            await createNewTicket(newMessage);
+        } catch (error) {
+            console.error('Failed to create ticket:', error);
+            // You might want to show an error message to the user here
+        }
 
-        setMessage(''); 
- 
-        setUploadedFile(null); 
-        setSelectedImage(null); 
-        setFileType(null); 
+        setMessageHistory(prev => [...prev, { 
+            type: 'user', 
+            text: newMessage, 
+            background: 'bg-gray-100' 
+        }]);
 
-        await generateAnswer(e); 
+        setMessage('');
+        setUploadedFile(null);
+        setSelectedImage(null);
+        setFileType(null);
+
+        await generateAnswer(e);
     };
 
     return (
@@ -199,7 +282,7 @@ const ChatBotPage = () => {
                     </h3>
                 </div>
                 <div className="bg-white px-4 py-5 sm:p-6">
-                    <div className="border rounded-lg h-96 overflow-y-auto mb-4 p-4">
+                    <div className="border rounded-lg h-96 overflow-y-auto mb-4 p-4 overflow-x-hidden">
                         {messageHistory.map((msg, index) => (
                             <p key={index} className={`text-black ${msg.background} text-left border rounded-md`}
                                 style={{ width: '50%', margin: msg.type === 'answer' ? '0.5rem 32rem 0 0' : '0.5rem 0 0 32rem', padding: '0.5rem' }}>
@@ -214,11 +297,10 @@ const ChatBotPage = () => {
                     </div>
                     <div className="mt-4">
                         <div className="flex rounded-md shadow-sm">
-                            <Input
-                                type="text"
+                            <Textarea
                                 name="message"
                                 id="message"
-                                className="border-b border-gray-200 focus:ring-blue-500 focus:border-blue-500 flex-1 block w-full rounded-none rounded-md sm:text-sm border-gray-300"
+                                className="border-b focus:ring-blue-500 focus:border-blue-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 h-24 resize-y"
                                 placeholder="    Gửi tin nhắn ở đây..."
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}  

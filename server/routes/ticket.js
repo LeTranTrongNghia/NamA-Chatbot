@@ -4,22 +4,22 @@ import { ObjectId } from "mongodb";
 
 const router = express.Router();
 
-// Get a list of all problems
+// Get a list of all tickets
 router.get("/", async (req, res) => {
   try {
-    let collection = await db.collection("problems");
+    let collection = await db.collection("tickets");
     let results = await collection.find({}).toArray();
     res.send(results).status(200);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error retrieving problems");
+    res.status(500).send("Error retrieving tickets");
   }
 });
 
-// Get a single problem by id
+// Get a single ticket by id
 router.get("/:id", async (req, res) => {
   try {
-    let collection = await db.collection("problems");
+    let collection = await db.collection("tickets");
     let query = { _id: new ObjectId(req.params.id) };
     let result = await collection.findOne(query);
 
@@ -30,67 +30,70 @@ router.get("/:id", async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error retrieving problem");
+    res.status(500).send("Error retrieving ticket");
   }
 });
 
-// Create a new problem
+// Create a new ticket
 router.post("/", async (req, res) => {
   try {
     let newDocument = {
-      title: req.body.title,
-      difficulty: req.body.difficulty,
-      type: req.body.type,
-      statement: req.body.statement,
-      constraints: req.body.constraints,
-      testCases: req.body.testCases,
+      tags: req.body.tags,
+      content: req.body.content,
+      summary: req.body.summary,
+      creationTime: req.body.creationTime || new Date().toISOString(),
+      status: req.body.status,
+      priority: req.body.priority,
+      responsibleTeam: req.body.responsibleTeam || null,
+      adminNotes: req.body.adminNotes || null
     };
-    let collection = await db.collection("problems");
+    let collection = await db.collection("tickets");
     let result = await collection.insertOne(newDocument);
     res.status(201).send(result);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error adding problem");
+    res.status(500).send("Error adding ticket");
   }
 });
 
-// Update a problem by id
+// Update a ticket by id
 router.patch("/:id", async (req, res) => {
   try {
     const query = { _id: new ObjectId(req.params.id) };
     const updates = {
       $set: {
-        title: req.body.title,
-        difficulty: req.body.difficulty,
-        type: req.body.type,
-        statement: req.body.statement,
-        constraints: req.body.constraints,
-        testCases: req.body.testCases,
+        tags: req.body.tags,
+        content: req.body.content,
+        summary: req.body.summary,
+        status: req.body.status,
+        priority: req.body.priority,
+        responsibleTeam: req.body.responsibleTeam,
+        adminNotes: req.body.adminNotes
       },
     };
 
-    let collection = await db.collection("problems");
+    let collection = await db.collection("tickets");
     let result = await collection.updateOne(query, updates);
     res.status(200).send(result);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error updating problem");
+    res.status(500).send("Error updating ticket");
   }
 });
 
-// Delete a problem
+// Delete a ticket
 router.delete("/:id", async (req, res) => {
   try {
     const query = { _id: new ObjectId(req.params.id) };
 
-    const collection = db.collection("problems");
+    const collection = db.collection("tickets");
     let result = await collection.deleteOne(query);
 
     res.status(200).send(result);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error deleting problem");
+    res.status(500).send("Error deleting ticket");
   }
 });
 
-export default router;
+export default router; 

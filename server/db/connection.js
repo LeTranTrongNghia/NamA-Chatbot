@@ -21,6 +21,6 @@ try {
   console.error(err);
 }
 
-let db = client.db("CodeHub");
+let db = client.db("ChatBotDB");
 
 export default db;
