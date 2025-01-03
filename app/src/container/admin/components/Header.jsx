@@ -35,7 +35,6 @@ const Header = ({ date, setDate }) => {
                     </DialogContent>
                 </Dialog>
 
-                <Button className="bg-primary text-primary-foreground">Create a Task</Button>
             </div>
         </header>
     );

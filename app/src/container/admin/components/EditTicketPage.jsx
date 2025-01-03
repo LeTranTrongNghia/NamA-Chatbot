@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { CalendarIcon, X, ArrowLeft } from 'lucide-react'
 import { format } from 'date-fns'
+import { vi } from 'date-fns/locale'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,7 +31,8 @@ export default function EditTicketPage() {
     const [priority, setPriority] = useState('High')
     const [responsibleTeam, setResponsibleTeam] = useState('')
     const [adminNotes, setAdminNotes] = useState('')
-    
+    const [isSaving, setIsSaving] = useState(false)
+
     useEffect(() => {
         const fetchTicket = async () => {
             try {
@@ -41,8 +43,8 @@ export default function EditTicketPage() {
                 setDate(new Date(ticketData.creationTime || Date.now()))
                 setContent(ticketData.content || '')
                 setSummary(ticketData.summary || '')
-                setStatus(ticketData.status || 'Todo')
-                setPriority(ticketData.priority || 'High')
+                setStatus(ticketData.status || 'Lên kế hoạch')
+                setPriority(ticketData.priority || 'Cao')
                 setResponsibleTeam(ticketData.responsibleTeam || '')
                 setAdminNotes(ticketData.adminNotes || '')
             } catch (error) {
@@ -50,11 +52,33 @@ export default function EditTicketPage() {
                 navigate('/admin')
             }
         }
-        
+
         if (id) {
             fetchTicket()
         }
     }, [id, navigate])
+
+    const handleSave = async () => {
+        setIsSaving(true)
+        try {
+            const updatedTicket = {
+                tags,
+                content: ticket.content,
+                summary,
+                status,
+                priority,
+                responsibleTeam,
+                adminNotes
+            }
+
+            await axios.patch(`http://localhost:5050/ticket/${id}`, updatedTicket)
+            navigate('/admin')
+        } catch (error) {
+            console.error('Error updating ticket:', error)
+        } finally {
+            setIsSaving(false)
+        }
+    }
 
     if (!ticket) {
         return <div>Loading...</div>
@@ -62,21 +86,23 @@ export default function EditTicketPage() {
 
     return (
         <div className="flex mt-6">
-            <LeftSidebar activeView="edit" setActiveView={() => {}} />
+            <LeftSidebar activeView="edit" setActiveView={() => { }} />
             <div className="flex-1 pl-64">
                 <Header date={date} setDate={setDate} />
                 <Card className="max-w-[90%] mx-2 my-8 border-none bg-background">
                     <CardHeader>
                         <CardTitle>
                             <div className="flex flex-col">
-                                <Button className="w-[160px] mb-8" onClick={() => window.location.href = '/admin'}><ArrowLeft/>Back to Admin</Button>
-                                Edit Ticket
+                                <Button className="w-[160px] mb-8" onClick={() => window.location.href = '/admin'}>
+                                    <ArrowLeft />Quay lại Admin
+                                </Button>
+                                Chỉnh sửa ticket
                             </div>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6 max-h-[420px]">
                         <div className="space-y-2">
-                            <Label>Tags</Label>
+                            <Label>Từ khóa</Label>
                             <div className="flex flex-wrap gap-2">
                                 {tags.map((tag) => (
                                     <Badge key={tag} variant="secondary" className="text-sm bg-red-100 text-red-800">
@@ -91,7 +117,7 @@ export default function EditTicketPage() {
                                 ))}
                                 <Select onValueChange={(value) => setTags([...tags, value])}>
                                     <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Add tag" />
+                                        <SelectValue placeholder="Thêm từ khóa" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Lỗi tính năng">Lỗi tính năng</SelectItem>
@@ -103,17 +129,17 @@ export default function EditTicketPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="content">Content</Label>
+                            <Label htmlFor="content">Nội dung khách hàng gặp phải</Label>
                             <Textarea
                                 id="content"
                                 value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                className="min-h-[100px]"
+                                readOnly
+                                className="min-h-[100px] bg-gray-100"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="summary">Summary</Label>
+                            <Label htmlFor="summary">Tóm tắt</Label>
                             <Textarea
                                 id="summary"
                                 value={summary}
@@ -123,66 +149,62 @@ export default function EditTicketPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Creation Time</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full justify-start text-left font-normal"
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <Calendar
-                                        mode="single"
-                                        selected={date}
-                                        onSelect={setDate}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
+                            <Label>Ngày tạo</Label>
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start text-left font-normal bg-gray-100"
+                                disabled
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {date ? format(date, "PPP", { locale: vi }) : <span>No date selected</span>}
+                            </Button>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Status</Label>
+                            <Label>Tình trạng</Label>
                             <RadioGroup value={status} onValueChange={setStatus} className="flex gap-4">
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Todo" id="todo" />
-                                    <Label htmlFor="todo">Todo</Label>
+                                    <RadioGroupItem value="Lên kế hoạch" id="todo" />
+                                    <Label htmlFor="todo">Lên kế hoạch</Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="In Progress" id="inprogress" />
-                                    <Label htmlFor="inprogress">In Progress</Label>
+                                    <RadioGroupItem value="Đang thực hiện" id="inprogress" />
+                                    <Label htmlFor="inprogress">Đang thực hiện</Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="Done" id="done" />
-                                    <Label htmlFor="done">Done</Label>
+                                    <RadioGroupItem value="Đã hoàn thành" id="done" />
+                                    <Label htmlFor="done">Đã hoàn thành</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Đã hủy" id="canceled" />
+                                    <Label htmlFor="canceled">Đã hủy</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="Chưa xử lý" id="backlog" />
+                                    <Label htmlFor="backlog">Chưa xử lý</Label>
                                 </div>
                             </RadioGroup>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Priority</Label>
+                            <Label>Độ ưu tiên</Label>
                             <Select value={priority} onValueChange={setPriority}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select priority" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Low">Low</SelectItem>
-                                    <SelectItem value="Medium">Medium</SelectItem>
-                                    <SelectItem value="High">High</SelectItem>
-                                    <SelectItem value="Critical">Critical</SelectItem>
+                                    <SelectItem value="Thấp"><p className="text-green-500">Thấp</p></SelectItem>
+                                    <SelectItem value="Trung bình"><p className="text-yellow-500">Trung bình</p></SelectItem>
+                                    <SelectItem value="Cao"><p className="text-red-500">Cao</p></SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Responsible Team</Label>
+                            <Label>Nhóm phụ trách</Label>
                             <Select value={responsibleTeam} onValueChange={setResponsibleTeam}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select team" />
+                                    <SelectValue placeholder="Chọn nhóm" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="frontend">Frontend</SelectItem>
@@ -194,18 +216,24 @@ export default function EditTicketPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="adminNotes">Admin Notes</Label>
+                            <Label htmlFor="adminNotes">Ghi chú</Label>
                             <Textarea
                                 id="adminNotes"
                                 value={adminNotes}
                                 onChange={(e) => setAdminNotes(e.target.value)}
-                                placeholder="Add administrative notes here..."
+                                placeholder="Thêm ghi chú"
                                 className="min-h-[80px]"
                             />
                         </div>
 
                         <div className="flex justify-end space-x-4">
-                            <Button className="mb-8">Save Changes</Button>
+                            <Button
+                                className="mb-8"
+                                onClick={handleSave}
+                                disabled={isSaving}
+                            >
+                                {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>

@@ -143,7 +143,7 @@ const ChatBotPage = () => {
         const question = message; 
 
         let promptPrefix =
-            'Act as a professional customer service employee for Nam Á Bank , provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to PDF or banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
+            'Act as a professional customer service employee for Nam Á Bank , provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
 
         try {
             const response = await axios({
@@ -196,7 +196,7 @@ const ChatBotPage = () => {
                 data: {
                     contents: [{
                         parts: [{
-                            text: `Summarize this question in Vietnamese in one short sentence, focusing on the main issue or request: "${questionText}"`
+                            text: `Summarize this request in Vietnamese in one short sentence so the developer can understand what this task is about, focusing on the main issue or request (do not use personal pronouns): "${questionText}"`
                         }]
                     }]
                 }
@@ -223,8 +223,8 @@ const ChatBotPage = () => {
                 content: sanitizedQuestionText,
                 summary: sanitizedSummary,
                 creationTime: new Date().toISOString(),
-                status: "Todo",
-                priority: "Low",
+                status: "Lên kế hoạch",
+                priority: "Thấp",
                 responsibleTeam: null,
                 adminNotes: null
             };

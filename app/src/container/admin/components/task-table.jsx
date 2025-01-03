@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck } from 'lucide-react'
+import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck, RefreshCcw } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -9,8 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { AlertDialog, AlertDialogFooter, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 export function TaskTable() {
     const [tickets, setTickets] = useState([]);
@@ -23,6 +25,8 @@ export function TaskTable() {
     const [sortField, setSortField] = useState(null);
     const [sortOrder, setSortOrder] = useState(null);
     const navigate = useNavigate();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [ticketToDelete, setTicketToDelete] = useState(null);
 
     // Fetch tickets from API
     useEffect(() => {
@@ -37,17 +41,41 @@ export function TaskTable() {
         fetchTickets();
     }, []);
 
+    // Function to delete a ticket by ID
+    const deleteTicket = async (ticketId) => {
+        try {
+            await axios.delete(`http://localhost:5050/ticket/${ticketId}`);
+            setTickets(tickets.filter(t => t._id !== ticketId));
+        } catch (error) {
+            console.error('Error deleting ticket:', error);
+        }
+    };
+
+    const handleDeleteClick = (ticketId) => {
+        setTicketToDelete(ticketId);
+        setIsDialogOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (ticketToDelete) {
+            deleteTicket(ticketToDelete);
+            setIsDialogOpen(false);
+            setTicketToDelete(null);
+            window.location.reload();
+        }
+    };
+
     const getStatusIcon = (status) => {
         switch (status) {
-            case "Todo":
+            case "Lên kế hoạch":
                 return <Circle className="h-4 w-4 text-yellow-500" />
-            case "In Progress":
+            case "Đang thực hiện":
                 return <Clock className="h-4 w-4 text-blue-500" />
-            case "Done":
+            case "Đã hoàn thành":
                 return <CheckCircle2 className="h-4 w-4 text-green-500" />
-            case "Canceled":
+            case "Đã hủy":
                 return <XCircle className="h-4 w-4 text-red-500" />
-            case "Backlog":
+            case "Chưa xử lý":
                 return <CircleAlert className="h-4 w-4 text-gray-500" />
             default:
                 return <CircleHelp className="h-4 w-4 text-gray-500" />
@@ -56,11 +84,11 @@ export function TaskTable() {
 
     const getPriorityColor = (priority) => {
         switch (priority) {
-            case "High":
+            case "Cao":
                 return "text-red-500"
-            case "Medium":
+            case "Trung bình":
                 return "text-yellow-500"
-            case "Low":
+            case "Thấp":
                 return "text-green-500"
             default:
                 return "text-black"
@@ -69,15 +97,15 @@ export function TaskTable() {
 
     const getPriorityValue = (priority) => {
         switch (priority) {
-            case "High": return 3;
-            case "Medium": return 2;
-            case "Low": return 1;
+            case "Cao": return 3;
+            case "Trung bình": return 2;
+            case "Thấp": return 1;
             default: return 0;
         }
     }
 
     const getStatusValue = (status) => {
-        const statusOrder = ["Todo", "In Progress", "Done", "Canceled", "Backlog"];
+        const statusOrder = ["Lên kế hoạch", "Đang thực hiện", "Đã hoàn thành", "Đã hủy", "Chưa xử lý"];
         return statusOrder.indexOf(status);
     }
 
@@ -126,14 +154,17 @@ export function TaskTable() {
 
     return (
         <div className="border border-gray-200 rounded-lg mt-2 p-6">
-            <div className="flex items-center border-b pb-4">
-                <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
-                <h1 className="text-lg font-semibold">Taskboard</h1>
+            <div className="flex items-center border-b pb-4 justify-between">
+                <div className="flex items-center">
+                    <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <h1 className="text-lg font-semibold">Bảng công việc</h1>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => window.location.reload()}><RefreshCcw className="h-4 w-4" /></Button>
             </div>
             <div className="w-full">
                 <div className="flex items-center gap-4 py-4">
                     <Input
-                        placeholder="Filter task's title or id..."
+                        placeholder="Tìm id hoặc tiêu đề của công việc..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="max-w-sm"
@@ -142,16 +173,16 @@ export function TaskTable() {
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-8 border-dashed">
-                                    <span>Status</span>
+                                    <span>Tình trạng</span>
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[200px] p-0" align="start">
                                 <Command>
-                                    <CommandInput placeholder="Filter by status..." />
+                                    <CommandInput placeholder="Tìm bằng tình trạng..." />
                                     <CommandList>
-                                        <CommandEmpty>No results found.</CommandEmpty>
+                                        <CommandEmpty>Không có kết quả.</CommandEmpty>
                                         <CommandGroup>
-                                            {["Todo", "In Progress", "Done", "Canceled", "Backlog"].map((status) => {
+                                            {["Lên kế hoạch", "Đang thực hiện", "Đã hoàn thành", "Đã hủy", "Chưa xử lý"].map((status) => {
                                                 const isSelected = selectedStatusFilters.has(status);
                                                 return (
                                                     <CommandItem
@@ -196,16 +227,16 @@ export function TaskTable() {
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-8 border-dashed">
-                                    <span>Priority</span>
+                                    <span>Độ ưu tiên</span>
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[200px] p-0" align="start">
                                 <Command>
-                                    <CommandInput placeholder="Filter by priority..." />
+                                    <CommandInput placeholder="Tìm bằng độ ưu tiên..." />
                                     <CommandList>
                                         <CommandEmpty>No results found.</CommandEmpty>
                                         <CommandGroup>
-                                            {["Low", "Medium", "High"].map((priority) => {
+                                            {["Thấp", "Trung bình", "Cao"].map((priority) => {
                                                 const isSelected = selectedPriorityFilters.has(priority);
                                                 return (
                                                     <CommandItem
@@ -286,7 +317,7 @@ export function TaskTable() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="sm" className="-ml-3 h-8 data-[state=open]:bg-accent">
-                                                <span>Task</span>
+                                                <span>Công việc</span>
                                                 {sortField === 'id' ? (
                                                     sortOrder === 'asc' ? (
                                                         <ArrowUp className="ml-2 h-4 w-4" />
@@ -304,14 +335,14 @@ export function TaskTable() {
                                                 setSortOrder('asc');
                                             }}>
                                                 <ArrowUp className="mr-2 h-4 w-4 text-gray-400" />
-                                                Asc
+                                                Tăng dần
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => {
                                                 setSortField('id');
                                                 setSortOrder('desc');
                                             }}>
                                                 <ArrowDown className="mr-2 h-4 w-4 text-gray-400" />
-                                                Desc
+                                                Giảm dần
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -320,7 +351,7 @@ export function TaskTable() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="sm" className="-ml-3 h-8 data-[state=open]:bg-accent">
-                                                <span>Title</span>
+                                                <span>Nội dung</span>
                                                 {sortField === 'title' ? (
                                                     sortOrder === 'asc' ? (
                                                         <ArrowUp className="ml-2 h-4 w-4" />
@@ -338,14 +369,14 @@ export function TaskTable() {
                                                 setSortOrder('asc');
                                             }}>
                                                 <ArrowUp className="mr-2 h-4 w-4 text-gray-400" />
-                                                Asc
+                                                Tăng dần
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => {
                                                 setSortField('title');
                                                 setSortOrder('desc');
                                             }}>
                                                 <ArrowDown className="mr-2 h-4 w-4 text-gray-400" />
-                                                Desc
+                                                Giảm dần
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -354,7 +385,7 @@ export function TaskTable() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="sm" className="-ml-3 h-8 data-[state=open]:bg-accent">
-                                                <span>Status</span>
+                                                <span>Tình trạng</span>
                                                 {sortField === 'status' ? (
                                                     sortOrder === 'asc' ? (
                                                         <ArrowUp className="ml-2 h-4 w-4" />
@@ -372,14 +403,14 @@ export function TaskTable() {
                                                 setSortOrder('asc');
                                             }}>
                                                 <ArrowUp className="mr-2 h-4 w-4 text-gray-400" />
-                                                Asc
+                                                Tăng dần
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => {
                                                 setSortField('status');
                                                 setSortOrder('desc');
                                             }}>
                                                 <ArrowDown className="mr-2 h-4 w-4 text-gray-400" />
-                                                Desc
+                                                Giảm dần
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -388,7 +419,7 @@ export function TaskTable() {
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="sm" className="-ml-3 h-8 data-[state=open]:bg-accent">
-                                                <span>Priority</span>
+                                                <span>Độ ưu tiên</span>
                                                 {sortField === 'priority' ? (
                                                     sortOrder === 'asc' ? (
                                                         <ArrowUp className="ml-2 h-4 w-4" />
@@ -406,14 +437,14 @@ export function TaskTable() {
                                                 setSortOrder('asc');
                                             }}>
                                                 <ArrowUp className="mr-2 h-4 w-4 text-gray-400" />
-                                                Asc
+                                                Tăng dần
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => {
                                                 setSortField('priority');
                                                 setSortOrder('desc');
                                             }}>
                                                 <ArrowDown className="mr-2 h-4 w-4 text-gray-400" />
-                                                Desc
+                                                Giảm dần
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -438,13 +469,22 @@ export function TaskTable() {
                                     </TableCell>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-500">
-                                                {ticket._id.substring(0, 10)}...
-                                            </span>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                        <span className="text-gray-500">
+                                                            {ticket._id.substring(0, 10)}...
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{ticket._id}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                             <div className="flex gap-1">
                                                 {ticket.tags.map((tag, index) => (
-                                                    <Badge 
-                                                        key={index} 
+                                                    <Badge
+                                                        key={index}
                                                         className="bg-red-100 text-red-800 hover:bg-red-100"
                                                     >
                                                         {tag}
@@ -454,7 +494,19 @@ export function TaskTable() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="max-w-[400px] truncate">
-                                        {truncateSummary(ticket.summary, 10)}
+
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <span className="text-gray-500">
+                                                        {truncateSummary(ticket.summary, 10)}...
+                                                    </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{ticket.summary}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
@@ -478,9 +530,11 @@ export function TaskTable() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem onClick={() => navigate(`/admin/tickets/edit/${ticket._id}`)}>
-                                                    Edit
+                                                    Chỉnh sửa
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDeleteClick(ticket._id)}>
+                                                    Xóa
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -491,11 +545,11 @@ export function TaskTable() {
                 </div>
                 <div className="flex items-center justify-between py-4">
                     <div className="text-sm text-gray-500">
-                        {selectedTasks.length} of {filteredTasks.length} row(s) selected
+                        {selectedTasks.length} trong số {filteredTasks.length} dòng được chọn
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <span className="text-sm">Rows per page</span>
+                            <span className="text-sm">Số dòng trong 1 trang</span>
                             <Select defaultValue="6">
                                 <SelectTrigger className="w-[70px]">
                                     <SelectValue />
@@ -506,7 +560,7 @@ export function TaskTable() {
                             </Select>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500">Page 1 of 10</span>
+                            <span className="text-sm text-gray-500">Trang 1 trên 10</span>
                             <div className="flex gap-1">
                                 <Button variant="outline" size="icon" className="h-8 w-8">
                                     <ChevronFirst />
@@ -525,6 +579,20 @@ export function TaskTable() {
                     </div>
                 </div>
             </div>
+            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Xác nhận xóa ticket</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bạn có chắc chắn muốn xóa ticket này không? Hành động này không thể hoàn tác.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => window.location.reload()}>Không</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-800">Có, xóa ticket này</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
