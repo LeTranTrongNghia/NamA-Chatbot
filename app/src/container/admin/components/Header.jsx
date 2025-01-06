@@ -8,7 +8,7 @@ const Header = ({ date, setDate }) => {
     return (
         <header className="fixed right-0 left-64 top-0 z-20 flex h-18 pt-12 items-center justify-between bg-background px-6 mx-8">
             <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold">Welcome back to NAB 👋</h1>
+                <h1 className="text-lg font-semibold">Chào mừng tới NAB 👋</h1>
             </div>
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon">

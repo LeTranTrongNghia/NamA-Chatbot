@@ -27,6 +27,61 @@ export function TaskTable() {
     const navigate = useNavigate();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [ticketToDelete, setTicketToDelete] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 5;
+    const getStatusValue = (status) => {
+        const statusOrder = ["Lên kế hoạch", "Đang thực hiện", "Đã hoàn thành", "Đã hủy", "Chưa xử lý"];
+        return statusOrder.indexOf(status);
+    }
+
+    const getPriorityValue = (priority) => {
+        switch (priority) {
+            case "Cao": return 1;
+            case "Trung bình": return 2;
+            case "Thấp": return 3;
+            default: return 0;
+        }
+    }
+
+    const filteredTasks = tickets.filter((ticket) => {
+        const matchesStatus = selectedStatusFilters.size === 0 || selectedStatusFilters.has(ticket.status);
+        const matchesPriority = selectedPriorityFilters.size === 0 || selectedPriorityFilters.has(ticket.priority);
+        const matchesSearch = ticket.summary.toLowerCase().includes(searchQuery.toLowerCase()) || ticket._id.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesPriority && matchesSearch;
+    }).sort((a, b) => {
+        if (!sortOrder || !sortField) return 0;
+        if (sortField === 'title') {
+            return sortOrder === 'asc'
+                ? a.summary.localeCompare(b.summary)
+                : b.summary.localeCompare(a.summary);
+        }
+        if (sortField === 'id') {
+            return sortOrder === 'asc'
+                ? a._id.localeCompare(b._id)
+                : b._id.localeCompare(a._id);
+        }
+        if (sortField === 'status') {
+            const statusA = getStatusValue(a.status);
+            const statusB = getStatusValue(b.status);
+            return sortOrder === 'asc'
+                ? statusA - statusB
+                : statusB - statusA;
+        }
+        if (sortField === 'priority') {
+            const priorityA = getPriorityValue(a.priority);
+            const priorityB = getPriorityValue(b.priority);
+            return sortOrder === 'asc'
+                ? priorityB - priorityA
+                : priorityA - priorityB;
+        }
+        return 0;
+    });
+
+    const indexOfLastTicket = currentPage * rowsPerPage;
+    
+    const indexOfFirstTicket = indexOfLastTicket - rowsPerPage;
+    
+    const currentTickets = filteredTasks.slice(indexOfFirstTicket, indexOfLastTicket);
 
     // Fetch tickets from API
     useEffect(() => {
@@ -95,54 +150,6 @@ export function TaskTable() {
         }
     }
 
-    const getPriorityValue = (priority) => {
-        switch (priority) {
-            case "Cao": return 3;
-            case "Trung bình": return 2;
-            case "Thấp": return 1;
-            default: return 0;
-        }
-    }
-
-    const getStatusValue = (status) => {
-        const statusOrder = ["Lên kế hoạch", "Đang thực hiện", "Đã hoàn thành", "Đã hủy", "Chưa xử lý"];
-        return statusOrder.indexOf(status);
-    }
-
-    const filteredTasks = tickets.filter((ticket) => {
-        const matchesStatus = selectedStatusFilters.size === 0 || selectedStatusFilters.has(ticket.status);
-        const matchesPriority = selectedPriorityFilters.size === 0 || selectedPriorityFilters.has(ticket.priority);
-        const matchesSearch = ticket.summary.toLowerCase().includes(searchQuery.toLowerCase()) || ticket._id.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesStatus && matchesPriority && matchesSearch;
-    }).sort((a, b) => {
-        if (!sortOrder || !sortField) return 0;
-        if (sortField === 'title') {
-            return sortOrder === 'asc'
-                ? a.summary.localeCompare(b.summary)
-                : b.summary.localeCompare(a.summary);
-        }
-        if (sortField === 'id') {
-            return sortOrder === 'asc'
-                ? a._id.localeCompare(b._id)
-                : b._id.localeCompare(a._id);
-        }
-        if (sortField === 'status') {
-            const statusA = getStatusValue(a.status);
-            const statusB = getStatusValue(b.status);
-            return sortOrder === 'asc'
-                ? statusA - statusB
-                : statusB - statusA;
-        }
-        if (sortField === 'priority') {
-            const priorityA = getPriorityValue(a.priority);
-            const priorityB = getPriorityValue(b.priority);
-            return sortOrder === 'asc'
-                ? priorityB - priorityA
-                : priorityA - priorityB;
-        }
-        return 0;
-    });
-
     // Utility function to truncate summary
     const truncateSummary = (summary, wordLimit) => {
         const words = summary.split(' ');
@@ -151,6 +158,17 @@ export function TaskTable() {
         }
         return summary;
     };
+
+    // Function to check if the ticket was created today
+    const isCreatedToday = (createdAt) => {
+        const today = new Date();
+        const createdDate = new Date(createdAt);
+        return (
+            createdDate.getDate() === today.getDate() &&
+            createdDate.getMonth() === today.getMonth() &&
+            createdDate.getFullYear() === today.getFullYear()
+        );
+    }
 
     return (
         <div className="border border-gray-200 rounded-lg mt-2 p-6">
@@ -290,7 +308,7 @@ export function TaskTable() {
                             }}
                         >
                             <X className="h-4 w-4 mr-2" />
-                            Reset
+                            Đặt lại
                         </Button>
                     </div>
                 </div>
@@ -453,7 +471,7 @@ export function TaskTable() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredTasks.map((ticket) => (
+                            {currentTickets.map((ticket) => (
                                 <TableRow key={ticket._id}>
                                     <TableCell>
                                         <Checkbox
@@ -481,6 +499,9 @@ export function TaskTable() {
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
+                                            {isCreatedToday(ticket.creationTime) && (
+                                                <Badge className="bg-green-200 text-green-800 hover:bg-green-200">Mới</Badge>
+                                            )}
                                             <div className="flex gap-1">
                                                 {ticket.tags.map((tag, index) => (
                                                     <Badge
@@ -493,8 +514,8 @@ export function TaskTable() {
                                             </div>
                                         </div>
                                     </TableCell>
+                                    
                                     <TableCell className="max-w-[400px] truncate">
-
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger>
@@ -550,28 +571,28 @@ export function TaskTable() {
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                             <span className="text-sm">Số dòng trong 1 trang</span>
-                            <Select defaultValue="6">
+                            <Select defaultValue="5">
                                 <SelectTrigger className="w-[70px]">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="6">6</SelectItem>
+                                    <SelectItem value="5">5</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500">Trang 1 trên 10</span>
+                            <span className="text-sm text-gray-500">Trang {currentPage} trên {Math.ceil(filteredTasks.length / rowsPerPage)}</span>
                             <div className="flex gap-1">
-                                <Button variant="outline" size="icon" className="h-8 w-8">
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
                                     <ChevronFirst />
                                 </Button>
-                                <Button variant="outline" size="icon" className="h-8 w-8">
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
                                     <ChevronLeft />
                                 </Button>
-                                <Button variant="outline" size="icon" className="h-8 w-8">
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage >= Math.ceil(filteredTasks.length / rowsPerPage)}>
                                     <ChevronRight />
                                 </Button>
-                                <Button variant="outline" size="icon" className="h-8 w-8">
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(Math.ceil(filteredTasks.length / rowsPerPage))} disabled={currentPage >= Math.ceil(filteredTasks.length / rowsPerPage)}>
                                     <ChevronLast />
                                 </Button>
                             </div>

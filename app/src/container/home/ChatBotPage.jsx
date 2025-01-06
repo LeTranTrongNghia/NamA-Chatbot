@@ -6,26 +6,29 @@ import { Button } from '@/components/ui/button';
 import pdfToText from 'react-pdftotext';
 import { getDocument } from 'pdfjs-dist/build/pdf';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
 
 const ChatBotPage = () => {
     const [message, setMessage] = useState('');
     const [finalMessage, setFinalMessage] = useState('');
     const [audioMessage, setAudioMessage] = useState('');
-    const [fileType, setFileType] = useState(null); 
+    const [fileType, setFileType] = useState(null);
     const audioRef = useRef(null);
     const [selectedImage, setSelectedImage] = useState(null);
-    const [loading, setLoading] = useState(false); 
-    const [messageHistory, setMessageHistory] = useState([]); 
-    const [audioSrc, setAudioSrc] = useState(''); 
+    const [loading, setLoading] = useState(false);
+    const [messageHistory, setMessageHistory] = useState([]);
+    const [audioSrc, setAudioSrc] = useState('');
     const [uploadedFile, setUploadedFile] = useState(null);
-    const [pdfText, setPdfText] = useState(''); 
+    const [pdfText, setPdfText] = useState('');
     const [existingPdfText, setExistingPdfText] = useState('');
+    const [selectedTag, setSelectedTag] = useState('');
+    const [tagError, setTagError] = useState(false);
 
     // API credentials and constants
-    const API_KEY_ID = import.meta.env.VITE_SPEECHFLOW_API_KEY_ID; 
+    const API_KEY_ID = import.meta.env.VITE_SPEECHFLOW_API_KEY_ID;
     const API_KEY_SECRET = import.meta.env.VITE_SPEECHFLOW_API_KEY_SECRET;
-    const LANG = "vi"; 
-    const RESULT_TYPE = 4; 
+    const LANG = "vi";
+    const RESULT_TYPE = 4;
 
     // Load existing PDF text on component mount
     useEffect(() => {
@@ -48,26 +51,26 @@ const ChatBotPage = () => {
         loadExistingPdf();
     }, []);
 
-    const handleAudioUpload = async (event) => { 
+    const handleAudioUpload = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            setFileType('audio'); 
-            setMessage("wait to process audio"); 
-            await transcribeAudio(file); 
+            setFileType('audio');
+            setMessage("wait to process audio");
+            await transcribeAudio(file);
         }
     };
 
-    const handleImageUpload = async (event) => { 
+    const handleImageUpload = async (event) => {
         const file = event.target.files[0];
         if (file) {
             setFileType('image');
-            setSelectedImage(file); 
-            setMessage("wait to process image"); 
-            await extractTextFromImage(file); 
+            setSelectedImage(file);
+            setMessage("wait to process image");
+            await extractTextFromImage(file);
         }
     };
 
-    const transcribeAudio = async (file) => { 
+    const transcribeAudio = async (file) => {
         const formData = new FormData();
         formData.append('file', file);
 
@@ -93,7 +96,7 @@ const ChatBotPage = () => {
                 console.log('Transcription Query Response:', queryResponse.data);
 
                 if (queryResponse.data.code === 11000) {
-                    const result = queryResponse.data.result || ''; 
+                    const result = queryResponse.data.result || '';
                     setAudioMessage(result);
                     setMessage(result);
                     setLoading(false);
@@ -108,17 +111,17 @@ const ChatBotPage = () => {
             }, 3000);
         } catch (error) {
             console.error("Error during transcription:", error);
-            setLoading(false); 
+            setLoading(false);
         }
     };
 
-    const extractTextFromImage = async (file) => { 
+    const extractTextFromImage = async (file) => {
         if (!file) return;
 
         setLoading(true);
         try {
             const { data: { text } } = await Tesseract.recognize(file, 'vie', {
-                logger: (info) => console.log(info), 
+                logger: (info) => console.log(info),
             });
             setLoading(false);
             setMessage(text);
@@ -128,19 +131,19 @@ const ChatBotPage = () => {
         }
     };
 
-    const extractText = async (event) => { 
+    const extractText = async (event) => {
         const file = event.target.files[0];
         pdfToText(file)
             .then(text => {
-                setPdfText(text); 
+                setPdfText(text);
             })
             .catch(error => console.error("Failed to extract text from pdf"));
     };
 
-    const generateAnswer = async (e) => { 
+    const generateAnswer = async (e) => {
         e.preventDefault();
-        setLoading(true); 
-        const question = message; 
+        setLoading(true);
+        const question = message;
 
         let promptPrefix =
             'Act as a professional customer service employee for Nam Á Bank , provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
@@ -213,13 +216,13 @@ const ChatBotPage = () => {
         try {
             // Remove newline characters from the question text
             const sanitizedQuestionText = questionText.replace(/\n/g, ' ');
-            
+
             // Generate summary using Gemini
             const generatedSummary = await generateSummary(sanitizedQuestionText);
             const sanitizedSummary = generatedSummary.replace(/\n/g, ' ');
 
             const ticketData = {
-                tags: ["Lỗi"],
+                tags: [selectedTag],
                 content: sanitizedQuestionText,
                 summary: sanitizedSummary,
                 creationTime: new Date().toISOString(),
@@ -238,8 +241,20 @@ const ChatBotPage = () => {
         }
     };
 
+    const handleTagChange = (event) => {
+        setSelectedTag(event.target.value);
+    };
+
     const handleSend = async (e) => {
         e.preventDefault();
+        
+        // Add validation for tag selection
+        if (!selectedTag) {
+            setTagError(true);
+            return; // Prevent sending if no tag is selected
+        }
+        setTagError(false);
+
         let newMessage = '';
 
         if (fileType === 'audio') {
@@ -259,10 +274,10 @@ const ChatBotPage = () => {
             // You might want to show an error message to the user here
         }
 
-        setMessageHistory(prev => [...prev, { 
-            type: 'user', 
-            text: newMessage, 
-            background: 'bg-gray-100' 
+        setMessageHistory(prev => [...prev, {
+            type: 'user',
+            text: newMessage,
+            background: 'bg-gray-100'
         }]);
 
         setMessage('');
@@ -282,6 +297,36 @@ const ChatBotPage = () => {
                     </h3>
                 </div>
                 <div className="bg-white px-4 py-5 sm:p-6">
+                    <div className="mb-4">
+                        <label htmlFor="tag" className="block text-sm font-medium text-gray-700">
+                            Nội dung cần hỗ trợ: <span className="text-red-500">*</span>
+                        </label>
+                        <Select 
+                            id="tag" 
+                            value={selectedTag} 
+                            onValueChange={(value) => {
+                                setSelectedTag(value);
+                                setTagError(false);
+                            }}
+                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <SelectTrigger className={tagError ? "border-red-500" : ""}>
+                                <SelectValue placeholder="Tôi cần hỗ trợ về..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="Lỗi tính năng">Lỗi tính năng trong app</SelectItem>
+                                    <SelectItem value="Lỗi thẻ">Lỗi thẻ</SelectItem>
+                                    <SelectItem value="Lỗi giao dịch">Lỗi giao dịch</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        {tagError && (
+                            <p className="text-red-500 text-sm mt-1">
+                                Vui lòng chọn nội dung cần hỗ trợ trước khi gửi câu hỏi
+                            </p>
+                        )}
+                    </div>
                     <div className="border rounded-lg h-96 overflow-y-auto mb-4 p-4 overflow-x-hidden">
                         {messageHistory.map((msg, index) => (
                             <p key={index} className={`text-black ${msg.background} text-left border rounded-md`}
@@ -303,7 +348,7 @@ const ChatBotPage = () => {
                                 className="border-b focus:ring-blue-500 focus:border-blue-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 h-24 resize-y"
                                 placeholder="    Gửi tin nhắn ở đây..."
                                 value={message}
-                                onChange={(e) => setMessage(e.target.value)}  
+                                onChange={(e) => setMessage(e.target.value)}
                             />
                             <div className="flex space-x-2 mx-2">
                                 <label className="cursor-pointer">
@@ -335,8 +380,8 @@ const ChatBotPage = () => {
                                     <input
                                         type="file"
                                         accept="application/pdf"
-                                        onChange={extractText} 
-                                        className="hidden" 
+                                        onChange={extractText}
+                                        className="hidden"
                                     />
                                 </label>
                             </div>

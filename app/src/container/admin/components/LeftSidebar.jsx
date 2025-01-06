@@ -13,26 +13,26 @@ const LeftSidebar = ({ activeView, setActiveView }) => {
                 </div>
                 <div className="flex flex-col">
                     <span className="text-sm font-semibold">NAB</span>
-                    <span className="text-xs text-muted-foreground">Digital Transformation Board</span>
+                    <span className="text-xs text-muted-foreground">Ban chuyển đổi số</span>
                 </div>
             </div>
             <div className="px-3 py-2">
                 <div className="space-y-1">
-                    <h2 className="px-4 py-2 text-xs font-semibold tracking-tight">MAIN</h2>
+                    {/* <h2 className="px-4 py-2 text-xs font-semibold tracking-tight">MAIN</h2> */}
                     <Button
                         variant={activeView === 'dashboard' ? 'default' : 'ghost'}
                         className="w-full justify-start gap-2"
                         onClick={() => setActiveView('dashboard')}
                     >
-                        Taskboard
+                        Bảng công việc
                     </Button>
-                    <Button
+                    {/* <Button
                         variant={activeView === 'progress' ? 'default' : 'ghost'}
                         className="w-full justify-start gap-2"
                         onClick={() => setActiveView('progress')}
                     >
                         Progress
-                    </Button>
+                    </Button> */}
                 </div>
                 {/* <div className="space-y-1">
                     <h2 className="px-4 py-2 text-xs font-semibold tracking-tight">FAVORITE</h2>
