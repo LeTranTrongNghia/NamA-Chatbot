@@ -6,6 +6,8 @@ import "./index.css";
 import ChatBotPage from "./container/home/ChatBotPage";
 import DashBoardPage from "./container/admin/dashboard";
 import EditTicketPage from "./container/admin/components/EditTicketPage";
+import UserRegistrationPage from "./container/home/UserRegistrationPage";
+import { UserTable } from "./container/admin/components/UserTable";
 
 const router = createBrowserRouter([
   {
@@ -14,15 +16,23 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
+        element: <UserRegistrationPage />,
+      },
+      {
+        path: "/chat",
         element: <ChatBotPage />,
       },
       {
-        path: "/admin",
-        element: <DashBoardPage />,
+        path: "/dashboard/tickets/edit/:id",
+        element: <EditTicketPage />,
       },
       {
-        path: "/admin/tickets/edit/:id",
-        element: <EditTicketPage />,
+        path: "/users",
+        element: <UserTable />,
+      },
+      {
+        path: "/dashboard",
+        element: <DashBoardPage />,
       },
     ],
   },

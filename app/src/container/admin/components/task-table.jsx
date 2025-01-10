@@ -12,7 +12,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-import { AlertDialog, AlertDialogFooter, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 export function TaskTable() {
     const [tickets, setTickets] = useState([]);
@@ -43,12 +42,29 @@ export function TaskTable() {
         }
     }
 
+    // Function to check if the ticket was created today
+    const isCreatedToday = (createdAt) => {
+        const today = new Date();
+        const createdDate = new Date(createdAt);
+        return (
+            createdDate.getDate() === today.getDate() &&
+            createdDate.getMonth() === today.getMonth() &&
+            createdDate.getFullYear() === today.getFullYear()
+        );
+    }
+
     const filteredTasks = tickets.filter((ticket) => {
         const matchesStatus = selectedStatusFilters.size === 0 || selectedStatusFilters.has(ticket.status);
         const matchesPriority = selectedPriorityFilters.size === 0 || selectedPriorityFilters.has(ticket.priority);
         const matchesSearch = ticket.summary.toLowerCase().includes(searchQuery.toLowerCase()) || ticket._id.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesStatus && matchesPriority && matchesSearch;
     }).sort((a, b) => {
+        const isAToday = isCreatedToday(a.creationTime);
+        const isBToday = isCreatedToday(b.creationTime);
+        
+        if (isAToday && !isBToday) return -1;
+        if (!isAToday && isBToday) return 1;
+
         if (!sortOrder || !sortField) return 0;
         if (sortField === 'title') {
             return sortOrder === 'asc'
@@ -83,42 +99,43 @@ export function TaskTable() {
     
     const currentTickets = filteredTasks.slice(indexOfFirstTicket, indexOfLastTicket);
 
-    // Fetch tickets from API
+    const fetchTickets = async () => {
+        try {
+            const response = await axios.get('http://localhost:5050/ticket');
+            setTickets(response.data);
+        } catch (error) {
+            console.error('Error fetching tickets:', error);
+        }
+    };
+
+    // Fetch tickets from API on component mount
     useEffect(() => {
-        const fetchTickets = async () => {
-            try {
-                const response = await axios.get('http://localhost:5050/ticket');
-                setTickets(response.data);
-            } catch (error) {
-                console.error('Error fetching tickets:', error);
-            }
-        };
         fetchTickets();
     }, []);
 
     // Function to delete a ticket by ID
-    const deleteTicket = async (ticketId) => {
-        try {
-            await axios.delete(`http://localhost:5050/ticket/${ticketId}`);
-            setTickets(tickets.filter(t => t._id !== ticketId));
-        } catch (error) {
-            console.error('Error deleting ticket:', error);
-        }
-    };
+    // const deleteTicket = async (ticketId) => {
+    //     try {
+    //         await axios.delete(`http://localhost:5050/ticket/${ticketId}`);
+    //         setTickets(tickets.filter(t => t._id !== ticketId));
+    //     } catch (error) {
+    //         console.error('Error deleting ticket:', error);
+    //     }
+    // };
 
-    const handleDeleteClick = (ticketId) => {
-        setTicketToDelete(ticketId);
-        setIsDialogOpen(true);
-    };
+    // const handleDeleteClick = (ticketId) => {
+    //     setTicketToDelete(ticketId);
+    //     setIsDialogOpen(true);
+    // };
 
-    const confirmDelete = () => {
-        if (ticketToDelete) {
-            deleteTicket(ticketToDelete);
-            setIsDialogOpen(false);
-            setTicketToDelete(null);
-            window.location.reload();
-        }
-    };
+    // const confirmDelete = () => {
+    //     if (ticketToDelete) {
+    //         deleteTicket(ticketToDelete);
+    //         setIsDialogOpen(false);
+    //         setTicketToDelete(null);
+    //         window.location.reload();
+    //     }
+    // };
 
     const getStatusIcon = (status) => {
         switch (status) {
@@ -159,17 +176,6 @@ export function TaskTable() {
         return summary;
     };
 
-    // Function to check if the ticket was created today
-    const isCreatedToday = (createdAt) => {
-        const today = new Date();
-        const createdDate = new Date(createdAt);
-        return (
-            createdDate.getDate() === today.getDate() &&
-            createdDate.getMonth() === today.getMonth() &&
-            createdDate.getFullYear() === today.getFullYear()
-        );
-    }
-
     return (
         <div className="border border-gray-200 rounded-lg mt-2 p-6">
             <div className="flex items-center border-b pb-4 justify-between">
@@ -177,7 +183,7 @@ export function TaskTable() {
                     <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
                     <h1 className="text-lg font-semibold">Bảng công việc</h1>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => window.location.reload()}><RefreshCcw className="h-4 w-4" /></Button>
+                <Button variant="outline" size="sm" onClick={fetchTickets}><RefreshCcw className="h-4 w-4" /></Button>
             </div>
             <div className="w-full">
                 <div className="flex items-center gap-4 py-4">
@@ -550,12 +556,12 @@ export function TaskTable() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => navigate(`/admin/tickets/edit/${ticket._id}`)}>
+                                                <DropdownMenuItem onClick={() => navigate(`/dashboard/tickets/edit/${ticket._id}`)}>
                                                     Chỉnh sửa
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleDeleteClick(ticket._id)}>
+                                                {/* <DropdownMenuItem onClick={() => handleDeleteClick(ticket._id)}>
                                                     Xóa
-                                                </DropdownMenuItem>
+                                                </DropdownMenuItem> */}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -600,7 +606,7 @@ export function TaskTable() {
                     </div>
                 </div>
             </div>
-            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            {/* <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Xác nhận xóa ticket</AlertDialogTitle>
@@ -613,7 +619,7 @@ export function TaskTable() {
                         <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-800">Có, xóa ticket này</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
-            </AlertDialog>
+            </AlertDialog> */}
         </div>
     )
 }

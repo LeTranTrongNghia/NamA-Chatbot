@@ -1,23 +1,28 @@
 import express from "express";
 import cors from "cors";
 import ticketRouter from "./routes/ticket.js";
+import userRouter from "./routes/user.js";
 
 
 const PORT = process.env.PORT || 5050;
 const app = express();
 
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cors());
+
+// Add detailed error handling
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    message: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
 // Routes
 app.use("/ticket", ticketRouter);
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something went wrong!");
-});
+app.use("/user", userRouter);
 
 // Start the Express server
 app.listen(PORT, () => {

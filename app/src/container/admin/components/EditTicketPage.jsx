@@ -8,14 +8,12 @@ import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
 import LeftSidebar from './LeftSidebar'
 import Header from './Header'
 
@@ -32,6 +30,7 @@ export default function EditTicketPage() {
     const [responsibleTeam, setResponsibleTeam] = useState('')
     const [adminNotes, setAdminNotes] = useState('')
     const [isSaving, setIsSaving] = useState(false)
+    const [userData, setUserData] = useState(null)
 
     useEffect(() => {
         const fetchTicket = async () => {
@@ -47,9 +46,19 @@ export default function EditTicketPage() {
                 setPriority(ticketData.priority || 'Cao')
                 setResponsibleTeam(ticketData.responsibleTeam || '')
                 setAdminNotes(ticketData.adminNotes || '')
+                fetchUserData(ticketData.userId)
             } catch (error) {
                 console.error('Error fetching ticket:', error)
                 navigate('/admin')
+            }
+        }
+
+        const fetchUserData = async (userId) => {
+            try {
+                const response = await axios.get(`http://localhost:5050/user/${userId}`)
+                setUserData(response.data)
+            } catch (error) {
+                console.error('Error fetching user data:', error)
             }
         }
 
@@ -70,9 +79,8 @@ export default function EditTicketPage() {
                 responsibleTeam,
                 adminNotes
             }
-
             await axios.patch(`http://localhost:5050/ticket/${id}`, updatedTicket)
-            navigate('/admin')
+            navigate('/dashboard')
         } catch (error) {
             console.error('Error updating ticket:', error)
         } finally {
@@ -86,14 +94,14 @@ export default function EditTicketPage() {
 
     return (
         <div className="flex mt-6">
-            <LeftSidebar activeView="edit" setActiveView={() => { }} />
+            <LeftSidebar activeView="edit" setActiveView={() => { }} navigate={navigate} />
             <div className="flex-1 pl-64">
                 <Header date={date} setDate={setDate} />
                 <Card className="max-w-[90%] mx-2 my-8 border-none bg-background">
                     <CardHeader>
                         <CardTitle>
                             <div className="flex flex-col">
-                                <Button className="w-[160px] mb-8" onClick={() => window.location.href = '/admin'}>
+                                <Button className="w-[160px] mb-8" onClick={() => window.location.href = '/dashboard'}>
                                     <ArrowLeft />Quay lại Admin
                                 </Button>
                                 Chỉnh sửa ticket
@@ -102,6 +110,17 @@ export default function EditTicketPage() {
                     </CardHeader>
                     <CardContent className="space-y-6 max-h-[420px]">
                         <div className="space-y-2">
+                            {userData && (
+                                <div className="space-y-2 mb-6">
+                                    <Label>Thông tin khách hàng gặp lỗi</Label>
+                                    <div className="bg-gray-100 p-4 rounded">
+                                        <p><Label>Tên:</Label> {userData.fullname}</p>
+                                        <p><Label>Email:</Label> {userData.email}</p>
+                                        <p><Label>Số điện thoại:</Label> {userData.phone}</p>
+                                    </div>
+                                </div>
+                            )}
+                            
                             <Label>Từ khóa</Label>
                             <div className="flex flex-wrap gap-2">
                                 {tags.map((tag) => (

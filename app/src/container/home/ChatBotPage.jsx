@@ -1,19 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
 import axios from 'axios';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import pdfToText from 'react-pdftotext';
 import { getDocument } from 'pdfjs-dist/build/pdf';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
+import { useNavigate } from 'react-router-dom';
 
 const ChatBotPage = () => {
     const [message, setMessage] = useState('');
     const [finalMessage, setFinalMessage] = useState('');
     const [audioMessage, setAudioMessage] = useState('');
     const [fileType, setFileType] = useState(null);
-    const audioRef = useRef(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [messageHistory, setMessageHistory] = useState([]);
@@ -23,12 +21,22 @@ const ChatBotPage = () => {
     const [existingPdfText, setExistingPdfText] = useState('');
     const [selectedTag, setSelectedTag] = useState('');
     const [tagError, setTagError] = useState(false);
+    const [userData, setUserData] = useState(null);
+    const navigate = useNavigate();
+    const [extractedDocText, setExtractedDocText] = useState('');
 
     // API credentials and constants
     const API_KEY_ID = import.meta.env.VITE_SPEECHFLOW_API_KEY_ID;
     const API_KEY_SECRET = import.meta.env.VITE_SPEECHFLOW_API_KEY_SECRET;
     const LANG = "vi";
     const RESULT_TYPE = 4;
+
+    // Add new state for user info
+    const [userInfo, setUserInfo] = useState({
+        fullname: '',
+        phone: '',
+        email: ''
+    });
 
     // Load existing PDF text on component mount
     useEffect(() => {
@@ -49,6 +57,30 @@ const ChatBotPage = () => {
         };
 
         loadExistingPdf();
+
+        // Retrieve extracted document text from localStorage
+        const storedExtractedDocText = localStorage.getItem('extractedDocText');
+        if (storedExtractedDocText) {
+            setExtractedDocText(JSON.parse(storedExtractedDocText).join(' ')); // Join paragraphs into a single string
+            console.log('Extracted Document Text:', JSON.parse(storedExtractedDocText)); // Print extracted text
+        }
+    }, []);
+
+    useEffect(() => {
+        // Get user data from localStorage
+        const storedUserData = localStorage.getItem('userData');
+        const storedUserService = localStorage.getItem('userService'); // Retrieve service
+        if (storedUserData) {
+            const userData = JSON.parse(storedUserData);
+            setUserData(userData);
+            // Set the initial tag based on the service selected
+            setSelectedTag(userData.service);
+            // Retrieve userId from userData
+            const userId = userData.userId; // Get userId
+        }
+        if (storedUserService) {
+            setSelectedTag(storedUserService); // Set selected tag to the stored service
+        }
     }, []);
 
     const handleAudioUpload = async (event) => {
@@ -137,7 +169,7 @@ const ChatBotPage = () => {
             .then(text => {
                 setPdfText(text);
             })
-            .catch(error => console.error("Failed to extract text from pdf"));
+            .catch(() => console.error("Failed to extract text from pdf"));
     };
 
     const generateAnswer = async (e) => {
@@ -146,7 +178,7 @@ const ChatBotPage = () => {
         const question = message;
 
         let promptPrefix =
-            'Act as a professional customer service employee for Nam Á Bank , provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
+            'Act as a professional customer service employee for Nam Á Bank, provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
 
         try {
             const response = await axios({
@@ -157,7 +189,7 @@ const ChatBotPage = () => {
                         {
                             parts: [
                                 {
-                                    text: `${promptPrefix} Analyze the following PDF text:\n\n${existingPdfText}\nUser Question: ${question}`,
+                                    text: `${promptPrefix} Analyze the following PDF text:\n\n${existingPdfText}\n\nAnd the extracted document text:\n\n${extractedDocText}\nUser Question: ${question}`,
                                 },
                             ],
                         },
@@ -212,17 +244,37 @@ const ChatBotPage = () => {
         }
     };
 
+    // Add function to create or get user
+    const getOrCreateUser = async () => {
+        try {
+            // In a real application, you might want to search for existing user first
+            const userData = {
+                fullname: userInfo.fullname,
+                phone: userInfo.phone,
+                email: userInfo.email
+            };
+            
+            const response = await axios.post('http://localhost:5050/user', userData);
+            return response.data.insertedId;
+        } catch (error) {
+            console.error('Error creating user:', error);
+            throw error;
+        }
+    };
+
+    // Update createNewTicket function
     const createNewTicket = async (questionText) => {
         try {
-            // Remove newline characters from the question text
             const sanitizedQuestionText = questionText.replace(/\n/g, ' ');
-
-            // Generate summary using Gemini
             const generatedSummary = await generateSummary(sanitizedQuestionText);
             const sanitizedSummary = generatedSummary.replace(/\n/g, ' ');
 
+            // Get userId from userData
+            const userId = userData.userId; // Use the retrieved userId
+
             const ticketData = {
-                tags: [selectedTag],
+                userId: userId, // Add userId to ticket data
+                tags: [selectedTag], // Use the selected tag (service)
                 content: sanitizedQuestionText,
                 summary: sanitizedSummary,
                 creationTime: new Date().toISOString(),
@@ -241,13 +293,15 @@ const ChatBotPage = () => {
         }
     };
 
-    const handleTagChange = (event) => {
-        setSelectedTag(event.target.value);
-    };
-
     const handleSend = async (e) => {
         e.preventDefault();
         
+        if (!userData) {
+            // Redirect to registration if no user data
+            navigate('/');
+            return;
+        }
+
         // Add validation for tag selection
         if (!selectedTag) {
             setTagError(true);
@@ -297,7 +351,7 @@ const ChatBotPage = () => {
                     </h3>
                 </div>
                 <div className="bg-white px-4 py-5 sm:p-6">
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                         <label htmlFor="tag" className="block text-sm font-medium text-gray-700">
                             Nội dung cần hỗ trợ: <span className="text-red-500">*</span>
                         </label>
@@ -326,7 +380,7 @@ const ChatBotPage = () => {
                                 Vui lòng chọn nội dung cần hỗ trợ trước khi gửi câu hỏi
                             </p>
                         )}
-                    </div>
+                    </div> */}
                     <div className="border rounded-lg h-96 overflow-y-auto mb-4 p-4 overflow-x-hidden">
                         {messageHistory.map((msg, index) => (
                             <p key={index} className={`text-black ${msg.background} text-left border rounded-md`}

@@ -38,6 +38,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     let newDocument = {
+      userId: req.body.userId,
       tags: req.body.tags,
       content: req.body.content,
       summary: req.body.summary,
@@ -49,6 +50,15 @@ router.post("/", async (req, res) => {
     };
     let collection = await db.collection("tickets");
     let result = await collection.insertOne(newDocument);
+
+    if (req.body.userId) {
+      const userCollection = await db.collection("users");
+      await userCollection.updateOne(
+        { _id: new ObjectId(req.body.userId) },
+        { $push: { ticketIds: result.insertedId.toString() } }
+      );
+    }
+
     res.status(201).send(result);
   } catch (err) {
     console.error(err);

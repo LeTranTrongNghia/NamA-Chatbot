@@ -34,7 +34,6 @@ const Header = ({ date, setDate }) => {
                         </DialogHeader>
                     </DialogContent>
                 </Dialog>
-
             </div>
         </header>
     );
