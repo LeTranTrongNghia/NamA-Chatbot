@@ -8,6 +8,7 @@ import DashBoardPage from "./container/admin/dashboard";
 import EditTicketPage from "./container/admin/components/EditTicketPage";
 import UserRegistrationPage from "./container/home/UserRegistrationPage";
 import { UserTable } from "./container/admin/components/UserTable";
+import PolicyPage from "./container/admin/policy";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <DashBoardPage />,
+      },
+      {
+        path: "/policy",
+        element: <PolicyPage />,
       },
     ],
   },

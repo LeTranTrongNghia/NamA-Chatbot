@@ -281,7 +281,8 @@ const ChatBotPage = () => {
                 status: "Lên kế hoạch",
                 priority: "Thấp",
                 responsibleTeam: null,
-                adminNotes: null
+                adminNotes: null,
+                rating: null,
             };
 
             const response = await axios.post('http://localhost:5050/ticket', ticketData);
@@ -351,36 +352,6 @@ const ChatBotPage = () => {
                     </h3>
                 </div>
                 <div className="bg-white px-4 py-5 sm:p-6">
-                    {/* <div className="mb-4">
-                        <label htmlFor="tag" className="block text-sm font-medium text-gray-700">
-                            Nội dung cần hỗ trợ: <span className="text-red-500">*</span>
-                        </label>
-                        <Select 
-                            id="tag" 
-                            value={selectedTag} 
-                            onValueChange={(value) => {
-                                setSelectedTag(value);
-                                setTagError(false);
-                            }}
-                            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        >
-                            <SelectTrigger className={tagError ? "border-red-500" : ""}>
-                                <SelectValue placeholder="Tôi cần hỗ trợ về..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="Lỗi tính năng">Lỗi tính năng trong app</SelectItem>
-                                    <SelectItem value="Lỗi thẻ">Lỗi thẻ</SelectItem>
-                                    <SelectItem value="Lỗi giao dịch">Lỗi giao dịch</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        {tagError && (
-                            <p className="text-red-500 text-sm mt-1">
-                                Vui lòng chọn nội dung cần hỗ trợ trước khi gửi câu hỏi
-                            </p>
-                        )}
-                    </div> */}
                     <div className="border rounded-lg h-96 overflow-y-auto mb-4 p-4 overflow-x-hidden">
                         {messageHistory.map((msg, index) => (
                             <p key={index} className={`text-black ${msg.background} text-left border rounded-md`}

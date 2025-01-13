@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
-export function TaskTable() {
+export function PolicyTable() {
     const [tickets, setTickets] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
     const [statusFilter, setStatusFilter] = useState("all");
@@ -58,7 +58,7 @@ export function TaskTable() {
         const matchesPriority = selectedPriorityFilters.size === 0 || selectedPriorityFilters.has(ticket.priority);
         const matchesSearch = ticket.summary.toLowerCase().includes(searchQuery.toLowerCase()) || ticket._id.toLowerCase().includes(searchQuery.toLowerCase());
         const hasConsultationTag = ticket.tags.includes("Tư vấn dịch vụ");
-        return matchesStatus && matchesPriority && matchesSearch && !hasConsultationTag;
+        return matchesStatus && matchesPriority && matchesSearch && hasConsultationTag;
     }).sort((a, b) => {
         const isAToday = isCreatedToday(a.creationTime);
         const isBToday = isCreatedToday(b.creationTime);
@@ -158,7 +158,7 @@ export function TaskTable() {
             <div className="flex items-center border-b pb-4 justify-between">
                 <div className="flex items-center">
                     <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <h1 className="text-lg font-semibold">Bảng công việc</h1>
+                    <h1 className="text-lg font-semibold">Bảng tư vấn khách hàng</h1>
                 </div>
                 <Button variant="outline" size="sm" onClick={fetchTickets}><RefreshCcw className="h-4 w-4" /></Button>
             </div>

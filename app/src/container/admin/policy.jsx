@@ -1,10 +1,10 @@
 import React from "react";
 import LeftSidebar from "./components/LeftSidebar";
 import Header from "./components/Header";
-import { TaskTable } from "./components/task-table";
 import { useNavigate } from "react-router-dom";
+import { PolicyTable } from "./components/policy-table";
 
-const DashBoardPage = () => {
+const PolicyPage = () => {
     const [date, setDate] = React.useState(new Date());
 
     return (
@@ -13,11 +13,11 @@ const DashBoardPage = () => {
             <div className="pl-64">
                 <Header date={date} setDate={setDate} />
                 <main className="px-6 mt-24">
-                    <TaskTable />
+                    <PolicyTable />
                 </main>
             </div>
         </div>
     );
 };
 
-export default DashBoardPage;
+export default PolicyPage;

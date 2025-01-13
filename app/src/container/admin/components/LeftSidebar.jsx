@@ -31,6 +31,14 @@ const LeftSidebar = ({ navigate }) => {
                     </Button>
                     <Button
                         variant="ghost"
+                        className={`w-full justify-start gap-2 ${location.pathname === '/policy' ? 'bg-black text-white' : ''}`}
+                        onClick={() => navigate('/policy')}
+                        tabIndex={0}
+                    >
+                        Tư vấn chính sách
+                    </Button>
+                    <Button
+                        variant="ghost"
                         className={`w-full justify-start gap-2 ${location.pathname === '/users' ? 'bg-black text-white' : ''}`}
                         onClick={() => navigate('/users')}
                         tabIndex={0}
