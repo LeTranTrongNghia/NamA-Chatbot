@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import ticketRouter from "./routes/ticket.js";
 import userRouter from "./routes/user.js";
+import docRouter from "./routes/doc.js";
 
 
 const PORT = process.env.PORT || 5050;
@@ -23,6 +24,7 @@ app.use((err, req, res, next) => {
 // Routes
 app.use("/ticket", ticketRouter);
 app.use("/user", userRouter);
+app.use("/doc", docRouter)
 
 // Start the Express server
 app.listen(PORT, () => {

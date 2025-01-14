@@ -259,7 +259,7 @@ const UserRegistrationPage = () => {
                         {errors.service && <p className="text-red-500 text-xs mt-1">{errors.service}</p>}
                     </div>
 
-                    <div>
+                    {/* <div>
                         <label className="block text-sm font-medium text-gray-700">
                             Tải lên tài liệu
                         </label>
@@ -269,7 +269,7 @@ const UserRegistrationPage = () => {
                             onChange={handleFileUpload}
                             className="mt-1"
                         />
-                    </div>
+                    </div> */}
 
                     {errors.submit && <p className="text-red-500 text-sm">{errors.submit}</p>}
 

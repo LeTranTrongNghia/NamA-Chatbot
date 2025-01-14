@@ -45,6 +45,14 @@ const LeftSidebar = ({ navigate }) => {
                     >
                         Quản lý người dùng
                     </Button>
+                    <Button
+                        variant="ghost"
+                        className={`w-full justify-start gap-2 ${location.pathname === '/doc' ? 'bg-black text-white' : ''}`}
+                        onClick={() => navigate('/doc')}
+                        tabIndex={0}
+                    >
+                        Quản lý tài liệu
+                    </Button>
                 </div>
             </div>
 

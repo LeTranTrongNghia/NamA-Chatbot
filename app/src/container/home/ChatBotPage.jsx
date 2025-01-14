@@ -24,6 +24,7 @@ const ChatBotPage = () => {
     const [userData, setUserData] = useState(null);
     const navigate = useNavigate();
     const [extractedDocText, setExtractedDocText] = useState('');
+    const [docsContent, setDocsContent] = useState('');
 
     // API credentials and constants
     const API_KEY_ID = import.meta.env.VITE_SPEECHFLOW_API_KEY_ID;
@@ -38,33 +39,49 @@ const ChatBotPage = () => {
         email: ''
     });
 
-    // Load existing PDF text on component mount
     useEffect(() => {
-        const loadExistingPdf = async () => {
-            const existingPdfFile = '/app/src/container/home/QnA_loi.pdf';
-            const pdf = await getDocument(existingPdfFile).promise;
-            const numPages = pdf.numPages;
-            let text = '';
-
-            for (let i = 1; i <= numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                const pageText = content.items.map(item => item.str).join(' ');
-                text += pageText + ' ';
+        const fetchDocs = async () => {
+            try {
+                const response = await axios.get('http://localhost:5050/doc');
+                const allDocsContent = response.data
+                    .map(doc => doc.content)
+                    .join('\n\n');
+                setDocsContent(allDocsContent);
+            } catch (error) {
+                console.error('Error fetching docs:', error);
             }
-
-            setExistingPdfText(text); // Set the extracted text
         };
 
-        loadExistingPdf();
-
-        // Retrieve extracted document text from localStorage
-        const storedExtractedDocText = localStorage.getItem('extractedDocText');
-        if (storedExtractedDocText) {
-            setExtractedDocText(JSON.parse(storedExtractedDocText).join(' ')); // Join paragraphs into a single string
-            console.log('Extracted Document Text:', JSON.parse(storedExtractedDocText)); // Print extracted text
-        }
+        fetchDocs();
     }, []);
+
+    // // Load existing PDF text on component mount
+    // useEffect(() => {
+    //     const loadExistingPdf = async () => {
+    //         const existingPdfFile = '/app/src/container/home/QnA_loi.pdf';
+    //         const pdf = await getDocument(existingPdfFile).promise;
+    //         const numPages = pdf.numPages;
+    //         let text = '';
+
+    //         for (let i = 1; i <= numPages; i++) {
+    //             const page = await pdf.getPage(i);
+    //             const content = await page.getTextContent();
+    //             const pageText = content.items.map(item => item.str).join(' ');
+    //             text += pageText + ' ';
+    //         }
+
+    //         setExistingPdfText(text); // Set the extracted text
+    //     };
+
+    //     loadExistingPdf();
+
+    //     // Retrieve extracted document text from localStorage
+    //     const storedExtractedDocText = localStorage.getItem('extractedDocText');
+    //     if (storedExtractedDocText) {
+    //         setExtractedDocText(JSON.parse(storedExtractedDocText).join(' ')); // Join paragraphs into a single string
+    //         console.log('Extracted Document Text:', JSON.parse(storedExtractedDocText)); // Print extracted text
+    //     }
+    // }, []);
 
     useEffect(() => {
         // Get user data from localStorage
@@ -178,7 +195,7 @@ const ChatBotPage = () => {
         const question = message;
 
         let promptPrefix =
-            'Act as a professional customer service employee for Nam Á Bank, provide a clear and helpful response to the user based on the following PDF text and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
+            'Act as a professional customer service employee for Nam Á Bank, provide a clear and helpful response to the user based on the following document content and their question. Answer like a normal text or paragraph, no special symbol. If customer send something not related to banking services, politely ask customer to send other request to help them with banking service issues or contact to Nam Á Bank hotline 1900 6679. Always answer customer with Vietnamese and answer as politely as possible.';
 
         try {
             const response = await axios({
@@ -189,7 +206,7 @@ const ChatBotPage = () => {
                         {
                             parts: [
                                 {
-                                    text: `${promptPrefix} Analyze the following PDF text:\n\n${existingPdfText}\n\nAnd the extracted document text:\n\n${extractedDocText}\nUser Question: ${question}`,
+                                    text: `${promptPrefix} Analyze the following document content:\n\n${docsContent}\n\nUser Question: ${question}`,
                                 },
                             ],
                         },
@@ -253,7 +270,7 @@ const ChatBotPage = () => {
                 phone: userInfo.phone,
                 email: userInfo.email
             };
-            
+
             const response = await axios.post('http://localhost:5050/user', userData);
             return response.data.insertedId;
         } catch (error) {
@@ -296,7 +313,7 @@ const ChatBotPage = () => {
 
     const handleSend = async (e) => {
         e.preventDefault();
-        
+
         if (!userData) {
             // Redirect to registration if no user data
             navigate('/');

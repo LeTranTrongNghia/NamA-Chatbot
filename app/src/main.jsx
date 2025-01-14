@@ -9,6 +9,9 @@ import EditTicketPage from "./container/admin/components/EditTicketPage";
 import UserRegistrationPage from "./container/home/UserRegistrationPage";
 import { UserTable } from "./container/admin/components/UserTable";
 import PolicyPage from "./container/admin/policy";
+import DocsPage from "./container/admin/docs";
+import AddDoc from "./container/admin/components/AddDoc";
+import EditDocPage from "./container/admin/components/EditDocPage";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +41,18 @@ const router = createBrowserRouter([
       {
         path: "/policy",
         element: <PolicyPage />,
+      },
+      {
+        path: "/doc",
+        element: <DocsPage />,
+      },
+      {
+        path: "/doc/add",
+        element: <AddDoc />,
+      },
+      {
+        path: "/doc/edit/:id",
+        element: <EditDocPage />,
       },
     ],
   },

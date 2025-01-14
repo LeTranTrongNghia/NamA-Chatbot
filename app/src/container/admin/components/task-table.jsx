@@ -583,20 +583,6 @@ export function TaskTable() {
                     </div>
                 </div>
             </div>
-            {/* <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Xác nhận xóa ticket</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Bạn có chắc chắn muốn xóa ticket này không? Hành động này không thể hoàn tác.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => window.location.reload()}>Không</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-800">Có, xóa ticket này</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog> */}
         </div>
     )
 }
