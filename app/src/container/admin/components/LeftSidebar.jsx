@@ -39,19 +39,27 @@ const LeftSidebar = ({ navigate }) => {
                     </Button>
                     <Button
                         variant="ghost"
-                        className={`w-full justify-start gap-2 ${location.pathname === '/users' ? 'bg-black text-white' : ''}`}
-                        onClick={() => navigate('/users')}
-                        tabIndex={0}
-                    >
-                        Quản lý người dùng
-                    </Button>
-                    <Button
-                        variant="ghost"
                         className={`w-full justify-start gap-2 ${location.pathname === '/doc' ? 'bg-black text-white' : ''}`}
                         onClick={() => navigate('/doc')}
                         tabIndex={0}
                     >
                         Quản lý tài liệu
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className={`w-full justify-start gap-2 ${location.pathname === '/review' ? 'bg-black text-white' : ''}`}
+                        onClick={() => navigate('/review')}
+                        tabIndex={0}
+                    >
+                        Đánh giá dịch vụ
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className={`w-full justify-start gap-2 ${location.pathname === '/users' ? 'bg-black text-white' : ''}`}
+                        onClick={() => navigate('/users')}
+                        tabIndex={0}
+                    >
+                        Quản lý người dùng
                     </Button>
                 </div>
             </div>

@@ -12,6 +12,7 @@ import PolicyPage from "./container/admin/policy";
 import DocsPage from "./container/admin/docs";
 import AddDoc from "./container/admin/components/AddDoc";
 import EditDocPage from "./container/admin/components/EditDocPage";
+import ReviewTicketPage from "./container/admin/reviewTicket";
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
       {
         path: "/doc/edit/:id",
         element: <EditDocPage />,
+      },
+      {
+        path: "/review",
+        element: <ReviewTicketPage />,
       },
     ],
   },

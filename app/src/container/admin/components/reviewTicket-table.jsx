@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck, RefreshCcw } from 'lucide-react'
+import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, RefreshCcw, Archive } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
-export function TaskTable() {
+export function ReviewTicketTable() {
     const [tickets, setTickets] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
     const [statusFilter, setStatusFilter] = useState("all");
@@ -57,9 +57,8 @@ export function TaskTable() {
         const matchesStatus = selectedStatusFilters.size === 0 || selectedStatusFilters.has(ticket.status);
         const matchesPriority = selectedPriorityFilters.size === 0 || selectedPriorityFilters.has(ticket.priority);
         const matchesSearch = ticket.summary.toLowerCase().includes(searchQuery.toLowerCase()) || ticket._id.toLowerCase().includes(searchQuery.toLowerCase());
-        const hasConsultationTag = ticket.tags.includes("Tư vấn dịch vụ");
-        const hasConsultationTag2 = ticket.tags.includes("Đánh giá dịch vụ");
-        return matchesStatus && matchesPriority && matchesSearch && !hasConsultationTag && !hasConsultationTag2;
+        const hasConsultationTag = ticket.tags.includes("Đánh giá dịch vụ");
+        return matchesStatus && matchesPriority && matchesSearch && hasConsultationTag;
     }).sort((a, b) => {
         const isAToday = isCreatedToday(a.creationTime);
         const isBToday = isCreatedToday(b.creationTime);
@@ -107,7 +106,6 @@ export function TaskTable() {
             setTickets(response.data);
         } catch (error) {
             console.error('Error fetching tickets:', error);
-            alert('Lỗi khi làm mới bảng công việc!');
         }
     };
 
@@ -159,8 +157,8 @@ export function TaskTable() {
         <div className="border border-gray-200 rounded-lg mt-2 p-6">
             <div className="flex items-center border-b pb-4 justify-between">
                 <div className="flex items-center">
-                    <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <h1 className="text-lg font-semibold">Bảng công việc</h1>
+                    <Archive className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <h1 className="text-lg font-semibold">Bảng đánh giá dịch vụ</h1>
                 </div>
                 <Button variant="outline" size="sm" onClick={fetchTickets}><RefreshCcw className="h-4 w-4" /></Button>
             </div>

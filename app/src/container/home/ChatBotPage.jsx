@@ -3,9 +3,11 @@ import Tesseract from 'tesseract.js';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import pdfToText from 'react-pdftotext';
-import { getDocument } from 'pdfjs-dist/build/pdf';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
+import { RectangleEllipsis, ShieldX, CreditCard } from 'lucide-react'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ChatBotPage = () => {
     const [message, setMessage] = useState('');
@@ -25,6 +27,8 @@ const ChatBotPage = () => {
     const navigate = useNavigate();
     const [extractedDocText, setExtractedDocText] = useState('');
     const [docsContent, setDocsContent] = useState('');
+    const [showSuggestionForm, setShowSuggestionForm] = useState(false);
+    const [suggestion, setSuggestion] = useState('');
 
     // API credentials and constants
     const API_KEY_ID = import.meta.env.VITE_SPEECHFLOW_API_KEY_ID;
@@ -54,34 +58,6 @@ const ChatBotPage = () => {
 
         fetchDocs();
     }, []);
-
-    // // Load existing PDF text on component mount
-    // useEffect(() => {
-    //     const loadExistingPdf = async () => {
-    //         const existingPdfFile = '/app/src/container/home/QnA_loi.pdf';
-    //         const pdf = await getDocument(existingPdfFile).promise;
-    //         const numPages = pdf.numPages;
-    //         let text = '';
-
-    //         for (let i = 1; i <= numPages; i++) {
-    //             const page = await pdf.getPage(i);
-    //             const content = await page.getTextContent();
-    //             const pageText = content.items.map(item => item.str).join(' ');
-    //             text += pageText + ' ';
-    //         }
-
-    //         setExistingPdfText(text); // Set the extracted text
-    //     };
-
-    //     loadExistingPdf();
-
-    //     // Retrieve extracted document text from localStorage
-    //     const storedExtractedDocText = localStorage.getItem('extractedDocText');
-    //     if (storedExtractedDocText) {
-    //         setExtractedDocText(JSON.parse(storedExtractedDocText).join(' ')); // Join paragraphs into a single string
-    //         console.log('Extracted Document Text:', JSON.parse(storedExtractedDocText)); // Print extracted text
-    //     }
-    // }, []);
 
     useEffect(() => {
         // Get user data from localStorage
@@ -299,7 +275,6 @@ const ChatBotPage = () => {
                 priority: "Thấp",
                 responsibleTeam: null,
                 adminNotes: null,
-                rating: null,
             };
 
             const response = await axios.post('http://localhost:5050/ticket', ticketData);
@@ -360,14 +335,88 @@ const ChatBotPage = () => {
         await generateAnswer(e);
     };
 
+    const handleSuggestionSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!userData) {
+            navigate('/');
+            return;
+        }
+
+        try {
+            const sanitizedSuggestion = suggestion.replace(/\n/g, ' ');
+            const generatedSummary = await generateSummary(sanitizedSuggestion);
+            const sanitizedSummary = generatedSummary.replace(/\n/g, ' ');
+
+            const ticketData = {
+                userId: userData.userId,
+                tags: ['Đánh giá dịch vụ'],
+                content: sanitizedSuggestion,
+                summary: sanitizedSummary,
+                creationTime: new Date().toISOString(),
+                status: "Lên kế hoạch",
+                priority: "Thấp",
+                responsibleTeam: null,
+                adminNotes: null,
+            };
+
+            const response = await axios.post('http://localhost:5050/ticket', ticketData);
+            console.log('Suggestion ticket created:', response.data);
+
+            // Reset form and show success message
+            setSuggestion('');
+            setShowSuggestionForm(false);
+            toast.success('Cảm ơn bạn đã gửi góp ý!');
+        } catch (error) {
+            console.error('Error creating suggestion ticket:', error);
+            toast.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
+        }
+    };
+
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ToastContainer />
             <div className="bg-white shadow-xl rounded-lg overflow-hidden">
-                <div className="bg-blue-500 px-4 py-5 border-b border-gray-200 sm:px-6">
+                <div className="bg-blue-500 px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
                     <h3 className="text-lg leading-6 font-medium text-white">
                         Chatbot tư vấn
                     </h3>
+                    <Button
+                        onClick={() => setShowSuggestionForm(true)}
+                        className="bg-white text-blue-500 hover:bg-blue-50"
+                    >
+                        Góp ý dịch vụ
+                    </Button>
                 </div>
+
+                {showSuggestionForm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg w-96">
+                            <h3 className="text-lg font-medium mb-4">Góp ý dịch vụ</h3>
+                            <Textarea
+                                value={suggestion}
+                                onChange={(e) => setSuggestion(e.target.value)}
+                                placeholder="Nhập góp ý của bạn..."
+                                className="w-full mb-4 h-32"
+                            />
+                            <div className="flex justify-end space-x-2">
+                                <Button
+                                    onClick={() => setShowSuggestionForm(false)}
+                                    className="bg-gray-200 text-gray-800 hover:bg-gray-300"
+                                >
+                                    Hủy
+                                </Button>
+                                <Button
+                                    onClick={handleSuggestionSubmit}
+                                    className="bg-blue-500 text-white hover:bg-blue-600"
+                                >
+                                    Gửi góp ý
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="bg-white px-4 py-5 sm:p-6">
                     <div className="border rounded-lg h-96 overflow-y-auto mb-4 p-4 overflow-x-hidden">
                         {messageHistory.map((msg, index) => (
@@ -433,6 +482,32 @@ const ChatBotPage = () => {
                                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
                                 Gửi
+                            </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 py-4 bg-white">
+                            <Button
+                                variant="outline"
+                                className="text-white bg-blue-500 hover:bg-blue-600 hover:text-white"
+                                onClick={() => setMessage('Điều kiện mở thẻ ở Nam Á Bank là gì ?')}
+                            >
+                                <CreditCard className="w-4 h-4 mr-2 text-white" /> 
+                                Điều kiện mở thẻ
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-white bg-blue-500 hover:bg-blue-600 hover:text-white"
+                                onClick={() => setMessage('Tôi gặp lỗi đăng nhập [Chi tiết lỗi] khi đăng nhập vào tài khoản của mình. Làm thế nào để khắc phục lỗi này ?')}
+                            >
+                                <ShieldX className="w-4 h-4 mr-2 text-white" /> 
+                                Lỗi đăng nhập
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-white bg-blue-500 hover:bg-blue-600 hover:text-white"
+                                onClick={() => setMessage('Tôi không nhận được mã OTP khi chuyển khoản. Làm thế nào để khắc phục lỗi này ?')}
+                            >
+                                <RectangleEllipsis className="w-4 h-4 mr-2 text-white" /> 
+                                Không nhận được mã OTP khi chuyển khoản
                             </Button>
                         </div>
                     </div>

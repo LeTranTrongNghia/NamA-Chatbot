@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck, RefreshCcw } from 'lucide-react'
+import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck, RefreshCcw, WalletCards } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -157,7 +157,7 @@ export function PolicyTable() {
         <div className="border border-gray-200 rounded-lg mt-2 p-6">
             <div className="flex items-center border-b pb-4 justify-between">
                 <div className="flex items-center">
-                    <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <WalletCards className="mr-2 h-4 w-4 text-muted-foreground" />
                     <h1 className="text-lg font-semibold">Bảng tư vấn khách hàng</h1>
                 </div>
                 <Button variant="outline" size="sm" onClick={fetchTickets}><RefreshCcw className="h-4 w-4" /></Button>

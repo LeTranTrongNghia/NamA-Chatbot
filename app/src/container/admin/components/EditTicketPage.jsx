@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { CalendarIcon, X, ArrowLeft } from 'lucide-react'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
-
+import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -92,6 +93,10 @@ export default function EditTicketPage() {
         return <div>Loading...</div>
     }
 
+    const showToast = () => {
+        toast.success('Đã lưu thay đổi!');
+    };
+
     return (
         <div className="flex mt-6">
             <LeftSidebar activeView="edit" setActiveView={() => { }} navigate={navigate} />
@@ -120,7 +125,7 @@ export default function EditTicketPage() {
                                     </div>
                                 </div>
                             )}
-                            
+
                             <Label>Từ khóa</Label>
                             <div className="flex flex-wrap gap-2">
                                 {tags.map((tag) => (
@@ -246,9 +251,13 @@ export default function EditTicketPage() {
                         </div>
 
                         <div className="flex justify-end space-x-4">
+                            <ToastContainer />
                             <Button
                                 className="mb-8"
-                                onClick={handleSave}
+                                onClick={() => {
+                                    showToast();
+                                    setTimeout(handleSave, 1500);
+                                }}
                                 disabled={isSaving}
                             >
                                 {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}

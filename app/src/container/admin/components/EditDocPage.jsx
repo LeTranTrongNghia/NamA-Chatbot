@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
@@ -62,6 +64,10 @@ export default function EditDocPage() {
         return <div>Loading...</div>
     }
 
+    const showToast = () => {
+        toast.success('Đã lưu thay đổi!');
+    };
+
     return (
         <div className="flex mt-6">
             <LeftSidebar activeView="edit" setActiveView={() => { }} navigate={navigate} />
@@ -108,9 +114,13 @@ export default function EditDocPage() {
                                 </div>
 
                                 <div className="flex justify-end space-x-4">
+                                    <ToastContainer />
                                     <Button
                                         className="mb-8"
-                                        onClick={handleSave}
+                                        onClick={() => {
+                                            showToast();
+                                            setTimeout(handleSave, 1500);
+                                        }}
                                         disabled={isSaving}
                                     >
                                         {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}

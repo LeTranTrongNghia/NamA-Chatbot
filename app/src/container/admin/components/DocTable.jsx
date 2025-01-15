@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react"
-import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck, RefreshCcw, Plus } from 'lucide-react'
-import { Badge } from "@/components/ui/badge"
+import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, MoreHorizontal, RefreshCcw, Plus, LibraryBig } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
@@ -70,7 +65,7 @@ export function DocsTable() {
         <div className="border border-gray-200 rounded-lg mt-2 p-6">
             <div className="flex items-center border-b pb-4 justify-between">
                 <div className="flex items-center">
-                    <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <LibraryBig className="mr-2 h-4 w-4 text-muted-foreground" />
                     <h1 className="text-lg font-semibold">Bảng tài liệu hỗ trợ</h1>
                 </div>
                 <div className="flex items-center gap-2">
