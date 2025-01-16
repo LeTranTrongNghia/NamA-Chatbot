@@ -25,6 +25,11 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+    --chart-1: #2563eb;
+    --chart-2: #93c5fd;
+    --chart-3: #030712;
+    --chart-4: #71717a;
+    --chart-5: #a1a1aa;
   }
 
   .dark {
@@ -47,5 +52,10 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+    --chart-1: white;
+    --chart-2: #71717A;
+    --chart-3: #030712;
+    --chart-4: #71717a;
+    --chart-5: #a1a1aa;
   }
 }

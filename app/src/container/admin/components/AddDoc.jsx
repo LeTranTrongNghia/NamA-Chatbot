@@ -55,19 +55,19 @@ const AddDoc = () => {
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="title">Document Title</Label>
+                                        <Label htmlFor="title">Tên tài liệu</Label>
                                         <Input
                                             id="title"
-                                            placeholder="Enter document title"
+                                            placeholder="Nhập tên tài liệu"
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="content">Document Content</Label>
+                                        <Label htmlFor="content">Nội dung</Label>
                                         <Textarea
                                             id="content"
-                                            placeholder="Enter document content"
+                                            placeholder="Nhập nội dung"
                                             className="min-h-[200px]"
                                             value={content}
                                             onChange={(e) => setContent(e.target.value)}
@@ -77,7 +77,7 @@ const AddDoc = () => {
                                 <CardFooter className="flex justify-between">
                                     <Button onClick={handleSave}>
                                         <Save className="w-4 h-4 mr-2" />
-                                        Save Document
+                                        Tạo tài liệu mới
                                     </Button>
                                 </CardFooter>
                             </Card>

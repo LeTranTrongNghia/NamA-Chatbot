@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck, RefreshCcw } from 'lucide-react'
+import { CheckCircle2, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Circle, CircleAlert, CircleHelp, ArrowUpDown, Clock, MoreHorizontal, X, XCircle, ArrowDown, ArrowUp, FileCheck, RefreshCcw, Lightbulb } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -12,8 +12,12 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
+import BarChartComponent from "./ChartComponent"
+
 
 export function TaskTable() {
+    const [open, setOpen] = useState(false)
     const [tickets, setTickets] = useState([]);
     const [selectedTasks, setSelectedTasks] = useState([]);
     const [statusFilter, setStatusFilter] = useState("all");
@@ -63,7 +67,7 @@ export function TaskTable() {
     }).sort((a, b) => {
         const isAToday = isCreatedToday(a.creationTime);
         const isBToday = isCreatedToday(b.creationTime);
-        
+
         if (isAToday && !isBToday) return -1;
         if (!isAToday && isBToday) return 1;
 
@@ -96,9 +100,9 @@ export function TaskTable() {
     });
 
     const indexOfLastTicket = currentPage * rowsPerPage;
-    
+
     const indexOfFirstTicket = indexOfLastTicket - rowsPerPage;
-    
+
     const currentTickets = filteredTasks.slice(indexOfFirstTicket, indexOfLastTicket);
 
     const fetchTickets = async () => {
@@ -162,7 +166,55 @@ export function TaskTable() {
                     <FileCheck className="mr-2 h-4 w-4 text-muted-foreground" />
                     <h1 className="text-lg font-semibold">Bảng công việc</h1>
                 </div>
-                <Button variant="outline" size="sm" onClick={fetchTickets}><RefreshCcw className="h-4 w-4" /></Button>
+                <div>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Drawer open={open} onOpenChange={setOpen}>
+                                        <DrawerTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                                <Lightbulb className="h-4 w-4" />
+                                            </Button>
+                                        </DrawerTrigger>
+                                        <DrawerContent>
+                                            <div className="mx-auto w-full max-w-sm">
+                                                <DrawerHeader>
+                                                    <DrawerTitle>Bảng phân tích</DrawerTitle>
+                                                    <DrawerDescription>Bảng phân tích nội dung các phiếu câu hỏi của khách hàng trong 7 ngày gần nhất.</DrawerDescription>
+                                                </DrawerHeader>
+                                                <div className="p-4 pb-0">
+                                                    <p className="text-center text-sm font-semibold text-muted-foreground">
+                                                        Biểu đồ cột phân chia các loại phiếu câu hỏi
+                                                    </p>
+                                                    <BarChartComponent />
+                                                </div>
+                                                <DrawerFooter>
+                                                    <DrawerClose asChild>
+                                                        <Button variant="outline">Đóng</Button>
+                                                    </DrawerClose>
+                                                </DrawerFooter>
+                                            </div>
+                                        </DrawerContent>
+                                    </Drawer>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Phân tích</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size="sm" className="ml-2" onClick={fetchTickets}><RefreshCcw className="h-4 w-4" /></Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Làm mới danh sách</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             </div>
             <div className="w-full">
                 <div className="flex items-center gap-4 py-4">
@@ -499,7 +551,7 @@ export function TaskTable() {
                                             </div>
                                         </div>
                                     </TableCell>
-                                    
+
                                     <TableCell className="max-w-[400px] truncate">
                                         <TooltipProvider>
                                             <Tooltip>
