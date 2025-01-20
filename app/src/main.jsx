@@ -13,6 +13,7 @@ import DocsPage from "./container/admin/docs";
 import AddDoc from "./container/admin/components/AddDoc";
 import EditDocPage from "./container/admin/components/EditDocPage";
 import ReviewTicketPage from "./container/admin/reviewTicket";
+import FeedbackPage from "./container/home/FeedbackPage";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
       {
         path: "/review",
         element: <ReviewTicketPage />,
+      },
+      {
+        path: "/feedback",
+        element: <FeedbackPage />,
       },
     ],
   },

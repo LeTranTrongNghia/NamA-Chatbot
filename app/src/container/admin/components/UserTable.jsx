@@ -8,6 +8,8 @@ import { ArrowUpRight, Copy, Users } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import LeftSidebar from "./LeftSidebar";
 import Header from "./Header";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 export function UserTable() {
     const [users, setUsers] = useState([]);
@@ -113,21 +115,21 @@ export function UserTable() {
                                 <div className="flex flex-col">
                                     <div className="flex justify-between py-2">
                                         <span>Tên: {selectedUser?.fullname}</span>
-                                        <Button type="submit" size="sm" className="px-3" onClick={() => copyToClipboard(selectedUser?.fullname)}>
+                                        <Button type="submit" size="sm" className="px-3 mr-4" onClick={() => copyToClipboard(selectedUser?.fullname)}>
                                             <span className="sr-only">Copy</span>
                                             <Copy />
                                         </Button>
                                     </div>
                                     <div className="flex justify-between py-2">
                                         <span>Email: {selectedUser?.email}</span>
-                                        <Button type="submit" size="sm" className="px-3" onClick={() => copyToClipboard(selectedUser?.email)}>
+                                        <Button type="submit" size="sm" className="px-3 mr-4" onClick={() => copyToClipboard(selectedUser?.email)}>
                                             <span className="sr-only">Copy</span>
                                             <Copy />
                                         </Button>
                                     </div>
                                     <div className="flex justify-between py-2">
                                         <span>Số điện thoại: {selectedUser?.phone}</span>
-                                        <Button type="submit" size="sm" className="px-3" onClick={() => copyToClipboard(selectedUser?.phone)}>
+                                        <Button type="submit" size="sm" className="px-3 mr-4" onClick={() => copyToClipboard(selectedUser?.phone)}>
                                             <span className="sr-only">Copy</span>
                                             <Copy />
                                         </Button>
@@ -137,19 +139,30 @@ export function UserTable() {
                                     </div>
                                     <div className="mt-4">
                                         <h3 className="font-semibold">Danh sách phiếu của khách hàng:</h3>
-                                        {userTickets.map(ticket => (
-                                            <div key={ticket._id} className="flex justify-between py-2">
-                                                <span>{ticket._id}</span>
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    className="px-3"
-                                                    onClick={() => navigate(`/dashboard/tickets/edit/${ticket._id}`)}
-                                                >
-                                                    <ArrowUpRight />
-                                                </Button>
-                                            </div>
-                                        ))}
+                                        <ScrollArea className="h-48 mt-2">
+                                            {userTickets.map(ticket => (
+                                                <div key={ticket._id} className="flex justify-between py-2">
+                                                    <span>{ticket.summary}</span>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger>
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    className="px-3 mr-4"
+                                                                    onClick={() => navigate(`/dashboard/tickets/edit/${ticket._id}`)}
+                                                                >
+                                                                    <ArrowUpRight />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                {ticket._id}
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
+                                            ))}
+                                        </ScrollArea>
                                     </div>
                                 </div>
                             </DialogContent>

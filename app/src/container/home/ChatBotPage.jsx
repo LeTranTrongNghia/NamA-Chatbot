@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import pdfToText from 'react-pdftotext';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { RectangleEllipsis, ShieldX, CreditCard } from 'lucide-react'
+import { RectangleEllipsis, ShieldX, CreditCard, Percent, WalletCards, TicketPercent, Clock, HeartHandshake } from 'lucide-react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import FAQ from './components/FAQ';
 
 const ChatBotPage = () => {
     const [message, setMessage] = useState('');
@@ -382,9 +383,11 @@ const ChatBotPage = () => {
                         Chatbot tư vấn
                     </h3>
                     <Button
-                        onClick={() => setShowSuggestionForm(true)}
+                        // onClick={() => setShowSuggestionForm(true)}
+                        onClick={() => navigate('/feedback')}
                         className="bg-white text-blue-500 hover:bg-blue-50"
                     >
+                        <HeartHandshake className="h-4 w-4 mr-2 text-blue-500" />
                         Góp ý dịch vụ
                     </Button>
                 </div>
@@ -441,77 +444,114 @@ const ChatBotPage = () => {
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                             />
-                            <div className="flex space-x-2 mx-2">
-                                <label className="cursor-pointer">
-                                    <span className="inline-flex items-center justify-center p-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200">
-                                        📷
-                                    </span>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        className="hidden"
-                                    />
-                                </label>
-                                <label className="cursor-pointer">
-                                    <span className="inline-flex items-center justify-center p-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200">
-                                        🎤
-                                    </span>
-                                    <input
-                                        type="file"
-                                        accept="audio/*"
-                                        onChange={handleAudioUpload}
-                                        className="hidden"
-                                    />
-                                </label>
-                                <label className="cursor-pointer">
-                                    <span className="inline-flex items-center justify-center p-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200">
-                                        📄
-                                    </span>
-                                    <input
-                                        type="file"
-                                        accept="application/pdf"
-                                        onChange={extractText}
-                                        className="hidden"
-                                    />
-                                </label>
+                            <div className="flex flex-col space-y-2 mx-2">
+                                <div className="flex space-x-2">
+                                    <label className="cursor-pointer">
+                                        <span className="inline-flex items-center justify-center p-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200">
+                                            📷
+                                        </span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    <label className="cursor-pointer">
+                                        <span className="inline-flex items-center justify-center p-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200">
+                                            🎤
+                                        </span>
+                                        <input
+                                            type="file"
+                                            accept="audio/*"
+                                            onChange={handleAudioUpload}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    <label className="cursor-pointer">
+                                        <span className="inline-flex items-center justify-center p-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200">
+                                            📄
+                                        </span>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf"
+                                            onChange={extractText}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
+                                <Button
+                                    type="button"
+                                    onClick={handleSend}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                >
+                                    Gửi
+                                </Button>
                             </div>
-                            <Button
-                                type="button"
-                                onClick={handleSend}
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            >
-                                Gửi
-                            </Button>
                         </div>
                         <div className="flex flex-wrap gap-2 py-4 bg-white">
                             <Button
                                 variant="outline"
                                 className="text-white bg-blue-500 hover:bg-blue-600 hover:text-white"
-                                onClick={() => setMessage('Điều kiện mở thẻ ở Nam Á Bank là gì ?')}
+                                onClick={() => setMessage('Điều kiện mở thẻ ở Nam Á Bank là gì?')}
                             >
-                                <CreditCard className="w-4 h-4 mr-2 text-white" /> 
+                                <CreditCard className="w-4 h-4 mr-2 text-white" />
                                 Điều kiện mở thẻ
                             </Button>
                             <Button
                                 variant="outline"
                                 className="text-white bg-blue-500 hover:bg-blue-600 hover:text-white"
-                                onClick={() => setMessage('Tôi gặp lỗi đăng nhập [Chi tiết lỗi] khi đăng nhập vào tài khoản của mình. Làm thế nào để khắc phục lỗi này ?')}
+                                onClick={() => setMessage('Tôi gặp lỗi đăng nhập [Chi tiết lỗi] khi đăng nhập vào tài khoản của mình. Làm thế nào để khắc phục lỗi này?')}
                             >
-                                <ShieldX className="w-4 h-4 mr-2 text-white" /> 
+                                <ShieldX className="w-4 h-4 mr-2 text-white" />
                                 Lỗi đăng nhập
                             </Button>
                             <Button
                                 variant="outline"
                                 className="text-white bg-blue-500 hover:bg-blue-600 hover:text-white"
-                                onClick={() => setMessage('Tôi không nhận được mã OTP khi chuyển khoản. Làm thế nào để khắc phục lỗi này ?')}
+                                onClick={() => setMessage('Tôi không nhận được mã OTP khi chuyển khoản. Làm thế nào để khắc phục lỗi này?')}
                             >
-                                <RectangleEllipsis className="w-4 h-4 mr-2 text-white" /> 
+                                <RectangleEllipsis className="w-4 h-4 mr-2 text-white" />
                                 Không nhận được mã OTP khi chuyển khoản
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-white bg-blue-500 hover:bg-blue-500 hover:text-white"
+                                onClick={() => setMessage('Lãi suất vay nhà hiện tại của ngân hàng là bao nhiêu?')}
+                            >
+                                <Percent className="w-4 h-4 mr-2 text-white" />
+                                Lãi suất vay mua nhà
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-white bg-blue-500 hover:bg-blue-500 hover:text-white"
+                                onClick={() => setMessage('Nam Á Bank hiện đang phát hành các loại thẻ gì?')}
+                            >
+                                <WalletCards className="w-4 h-4 mr-2 text-white" />
+                                Danh sách các loại thẻ ngân hàng
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-white bg-blue-500 hover:bg-blue-500 hover:text-white"
+                                onClick={() => setMessage('Hiện tại đang có những chương trình khuyến mãi nào dành cho khách hàng?')}
+                            >
+                                <TicketPercent className="h-4 w-4 mr-2 text-white" />
+                                Các chương trình khuyến mãi
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-white bg-blue-500 hover:bg-blue-500 hover:text-white"
+                                onClick={() => setMessage('Khung giờ hoạt động của Nam Á Bank')}
+                            >
+                                <Clock className="h-4 w-4 mr-2 text-white" />
+                                Khung giờ hoạt động của Nam Á Bank
                             </Button>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div className="mt-10">
+                <FAQ />
             </div>
         </div>
     );
