@@ -383,42 +383,13 @@ const ChatBotPage = () => {
                         Chatbot tư vấn
                     </h3>
                     <Button
-                        // onClick={() => setShowSuggestionForm(true)}
-                        onClick={() => navigate('/feedback')}
+                        onClick={() => navigate('/feedback', { state: { userId: userData.userId } })}
                         className="bg-white text-blue-500 hover:bg-blue-50"
                     >
                         <HeartHandshake className="h-4 w-4 mr-2 text-blue-500" />
                         Góp ý dịch vụ
                     </Button>
                 </div>
-
-                {showSuggestionForm && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white p-6 rounded-lg w-96">
-                            <h3 className="text-lg font-medium mb-4">Góp ý dịch vụ</h3>
-                            <Textarea
-                                value={suggestion}
-                                onChange={(e) => setSuggestion(e.target.value)}
-                                placeholder="Nhập góp ý của bạn..."
-                                className="w-full mb-4 h-32"
-                            />
-                            <div className="flex justify-end space-x-2">
-                                <Button
-                                    onClick={() => setShowSuggestionForm(false)}
-                                    className="bg-gray-200 text-gray-800 hover:bg-gray-300"
-                                >
-                                    Hủy
-                                </Button>
-                                <Button
-                                    onClick={handleSuggestionSubmit}
-                                    className="bg-blue-500 text-white hover:bg-blue-600"
-                                >
-                                    Gửi góp ý
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 <div className="bg-white px-4 py-5 sm:p-6">
                     <div className="border rounded-lg h-96 overflow-y-auto mb-4 p-4 overflow-x-hidden">

@@ -8,6 +8,7 @@ export function StarRating({ rating, onRatingChange }) {
       {[1, 2, 3, 4, 5].map((star) => (
         <motion.button
           key={star}
+          type="button"
           initial={{ scale: 1 }}
           whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
