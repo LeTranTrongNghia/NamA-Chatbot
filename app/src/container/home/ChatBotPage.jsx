@@ -383,7 +383,7 @@ const ChatBotPage = () => {
                         Chatbot tư vấn
                     </h3>
                     <Button
-                        onClick={() => navigate('/feedback', { state: { userId: userData.userId } })}
+                        onClick={() => navigate('/userfeedback', { state: { userId: userData.userId } })}
                         className="bg-white text-blue-500 hover:bg-blue-50"
                     >
                         <HeartHandshake className="h-4 w-4 mr-2 text-blue-500" />

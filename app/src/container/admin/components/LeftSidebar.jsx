@@ -31,7 +31,7 @@ const LeftSidebar = ({ navigate }) => {
                     </Button>
                     <Button
                         variant="ghost"
-                        className={`w-full justify-start gap-2 ${location.pathname === '/policy' ? 'bg-black text-white' : ''}`}
+                        className={`w-full justify-start gap-2 ${location.pathname.includes('policy')  ? 'bg-black text-white' : ''}`}
                         onClick={() => navigate('/policy')}
                         tabIndex={0}
                     >
@@ -39,7 +39,7 @@ const LeftSidebar = ({ navigate }) => {
                     </Button>
                     <Button
                         variant="ghost"
-                        className={`w-full justify-start gap-2 ${location.pathname === '/doc' ? 'bg-black text-white' : ''}`}
+                        className={`w-full justify-start gap-2 ${location.pathname.includes('doc') ? 'bg-black text-white' : ''}`}
                         onClick={() => navigate('/doc')}
                         tabIndex={0}
                     >
@@ -47,15 +47,15 @@ const LeftSidebar = ({ navigate }) => {
                     </Button>
                     <Button
                         variant="ghost"
-                        className={`w-full justify-start gap-2 ${location.pathname === '/review' ? 'bg-black text-white' : ''}`}
-                        onClick={() => navigate('/review')}
+                        className={`w-full justify-start gap-2 ${location.pathname.includes('feedback') ? 'bg-black text-white' : ''}`}
+                        onClick={() => navigate('/feedback')}
                         tabIndex={0}
                     >
                         Đánh giá dịch vụ
                     </Button>
                     <Button
                         variant="ghost"
-                        className={`w-full justify-start gap-2 ${location.pathname === '/users' ? 'bg-black text-white' : ''}`}
+                        className={`w-full justify-start gap-2 ${location.pathname.includes('users') ? 'bg-black text-white' : ''}`}
                         onClick={() => navigate('/users')}
                         tabIndex={0}
                     >

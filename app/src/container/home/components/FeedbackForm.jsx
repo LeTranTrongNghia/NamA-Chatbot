@@ -4,8 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import axios from 'axios';
-import { toast } from 'react-toastify';
-
+import { ToastContainer, toast } from 'react-toastify';
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -31,6 +30,10 @@ export function CustomerFeedbackForm() {
     async function onSubmit(values) {
         setIsSubmitting(true);
         try {
+            if (!values || !values.feedbackType) {
+                throw new Error("Feedback type is required");
+            }
+
             const feedbackData = {
                 userId: userId,
                 createAt: new Date().toISOString(),
@@ -42,8 +45,11 @@ export function CustomerFeedbackForm() {
 
             const response = await axios.post('http://localhost:5050/feedback', feedbackData);
             console.log('Feedback submitted:', response.data);
+
             toast.success('Cảm ơn bạn đã gửi góp ý!');
-            navigate('/chat');
+            setTimeout(() => {
+                navigate('/chat');
+            }, 2000); // Navigate after 2 seconds
         } catch (error) {
             console.error('Error submitting feedback:', error);
             toast.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
@@ -51,6 +57,10 @@ export function CustomerFeedbackForm() {
             setIsSubmitting(false);
         }
     }
+
+    const showToast = () => {
+        toast.success('Đã lưu thay đổi!');
+    };
 
     return (
         <div>
@@ -64,7 +74,7 @@ export function CustomerFeedbackForm() {
                     Back to Chat
                 </Button>
             </div>
-            
+
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <motion.div
@@ -164,9 +174,9 @@ export function CustomerFeedbackForm() {
                                 <FormItem>
                                     <FormLabel>3. Đánh giá trải nghiệm của bạn với chatbot</FormLabel>
                                     <FormControl>
-                                        <StarRating 
-                                            rating={field.value} 
-                                            onRatingChange={(value) => field.onChange(value)} 
+                                        <StarRating
+                                            rating={field.value}
+                                            onRatingChange={(value) => field.onChange(value)}
                                         />
                                     </FormControl>
                                     <FormDescription>
@@ -217,7 +227,11 @@ export function CustomerFeedbackForm() {
                         >
                             Hủy
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
+                        <ToastContainer />
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? 'Đang gửi...' : 'Gửi góp ý'}
                         </Button>
                     </motion.div>

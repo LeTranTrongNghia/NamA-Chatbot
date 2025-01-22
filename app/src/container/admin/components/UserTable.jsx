@@ -17,6 +17,7 @@ export function UserTable() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [userTickets, setUserTickets] = useState([]);
+    const [feedbackCounts, setFeedbackCounts] = useState({});
     const navigate = useNavigate();
 
     // Fetch users from API
@@ -29,10 +30,34 @@ export function UserTable() {
         }
     };
 
+    // Fetch feedback counts for users
+    const fetchFeedbackCounts = async () => {
+        try {
+            const response = await axios.get('http://localhost:5050/feedback');
+            const feedbacks = response.data;
+            console.log("Fetched Feedbacks:", feedbacks); // Log feedbacks for debugging
+            const counts = {};
+            users.forEach(user => {
+                counts[user._id] = feedbacks.filter(feedback => feedback.userId === user._id).length;
+                console.log(`User ID: ${user._id}, Feedback Count: ${counts[user._id]}`); // Log count for each user
+            });
+            setFeedbackCounts(counts);
+        } catch (error) {
+            console.error('Error fetching feedback:', error);
+        }
+    };
+
     // Fetch users from API on component mount
     useEffect(() => {
         fetchUsers();
     }, []);
+
+    // Fetch feedback counts whenever users change
+    useEffect(() => {
+        if (users.length > 0) {
+            fetchFeedbackCounts();
+        }
+    }, [users]);
 
     const handleRowClick = async (user) => {
         setSelectedUser(user);
@@ -87,21 +112,22 @@ export function UserTable() {
                                     <TableCell>Email</TableCell>
                                     <TableCell>Số điện thoại</TableCell>
                                     <TableCell>Số phiếu</TableCell>
+                                    <TableCell>Số đánh giá</TableCell>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {users.filter(user =>
-                                    (user.fullname?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-                                    (user.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-                                    (user.phone || '').includes(searchQuery)
-                                ).map((user) => (
-                                    <TableRow key={user.id} onClick={() => handleRowClick(user)}>
-                                        <TableCell>{user.fullname}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.phone}</TableCell>
-                                        <TableCell>{user.ticketIds.length}</TableCell>
-                                    </TableRow>
-                                ))}
+                                {users.map((user) => {
+                                    const feedbackCount = feedbackCounts[user._id] || 0;
+                                    return (
+                                        <TableRow key={user._id} onClick={() => handleRowClick(user)}>
+                                            <TableCell>{user.fullname}</TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell>{user.phone}</TableCell>
+                                            <TableCell>{user.ticketIds.length}</TableCell>
+                                            <TableCell>{feedbackCount}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

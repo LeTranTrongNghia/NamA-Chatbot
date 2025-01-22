@@ -14,6 +14,7 @@ import AddDoc from "./container/admin/components/AddDoc";
 import EditDocPage from "./container/admin/components/EditDocPage";
 import ReviewTicketPage from "./container/admin/reviewTicket";
 import FeedbackPage from "./container/home/FeedbackPage";
+import FeedbackDetailPage from "./container/admin/components/DetailFeedbackPage";
 
 const router = createBrowserRouter([
   {
@@ -57,12 +58,16 @@ const router = createBrowserRouter([
         element: <EditDocPage />,
       },
       {
-        path: "/review",
+        path: "/feedback",
         element: <ReviewTicketPage />,
       },
       {
-        path: "/feedback",
+        path: "/userfeedback",
         element: <FeedbackPage />,
+      },
+      {
+        path: "/feedback/:id",
+        element: <FeedbackDetailPage />,
       },
     ],
   },

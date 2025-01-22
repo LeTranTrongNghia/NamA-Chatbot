@@ -63,6 +63,22 @@ export function ReviewTicketTable() {
         fetchUserFullNames(userIds);
     }, [feedback]);
 
+    // Move isToday helper function before filteredFeedback
+    const isToday = (dateString) => {
+        if (!dateString) return false;
+        const today = new Date();
+        const date = new Date(dateString);
+        console.log('Date comparison:', {
+            dateString,
+            isValid: date instanceof Date && !isNaN(date),
+            date,
+            today
+        });
+        return date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
+    };
+
     const filteredFeedback = feedback.filter((item) => {
         const matchesSearch = (
             item.problemFeedback?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -70,6 +86,14 @@ export function ReviewTicketTable() {
         );
         return matchesSearch;
     }).sort((a, b) => {
+        // First prioritize today's feedback
+        const isAToday = isToday(a.createAt);
+        const isBToday = isToday(b.createAt);
+        
+        if (isAToday && !isBToday) return -1;
+        if (!isAToday && isBToday) return 1;
+        
+        // Then apply the regular sorting if both items are from the same day
         if (!sortOrder || !sortField) return 0;
         if (sortField === 'problem') {
             return sortOrder === 'asc'
@@ -147,15 +171,25 @@ export function ReviewTicketTable() {
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger>
-                                                    {item.userId.substring(0, 8)}...
+                                                    {userFullNames[item.userId] || "Unknown User"}
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    {userFullNames[item.userId] || "Unknown User"}
+                                                    {item.userId}
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
                                     </TableCell>
-                                    <TableCell>{item.problemFeedback}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            {item.problemFeedback}
+                                            {console.log('Item data:', item)}
+                                            {isToday(item.createAt) && (
+                                                <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100">
+                                                    Mới
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>
                                         <TooltipProvider>
                                             <Tooltip>
@@ -182,8 +216,7 @@ export function ReviewTicketTable() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>Chi tiết</DropdownMenuItem>
-                                                <DropdownMenuItem>Xóa</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => navigate(`/feedback/${item._id}`)}>Chi tiết</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
