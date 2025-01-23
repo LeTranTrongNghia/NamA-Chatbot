@@ -68,12 +68,12 @@ export function ReviewTicketTable() {
         if (!dateString) return false;
         const today = new Date();
         const date = new Date(dateString);
-        console.log('Date comparison:', {
-            dateString,
-            isValid: date instanceof Date && !isNaN(date),
-            date,
-            today
-        });
+        // console.log('Date comparison:', {
+        //     dateString,
+        //     isValid: date instanceof Date && !isNaN(date),
+        //     date,
+        //     today
+        // });
         return date.getDate() === today.getDate() &&
             date.getMonth() === today.getMonth() &&
             date.getFullYear() === today.getFullYear();
@@ -182,7 +182,7 @@ export function ReviewTicketTable() {
                                     <TableCell>
                                         <div className="flex items-center gap-2">
                                             {item.problemFeedback}
-                                            {console.log('Item data:', item)}
+                                            {/* {console.log('Item data:', item)} */}
                                             {isToday(item.createAt) && (
                                                 <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100">
                                                     Mới

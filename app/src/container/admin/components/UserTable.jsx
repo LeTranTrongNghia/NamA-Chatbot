@@ -35,11 +35,11 @@ export function UserTable() {
         try {
             const response = await axios.get('http://localhost:5050/feedback');
             const feedbacks = response.data;
-            console.log("Fetched Feedbacks:", feedbacks); // Log feedbacks for debugging
+            // console.log("Fetched Feedbacks:", feedbacks); // Log feedbacks for debugging
             const counts = {};
             users.forEach(user => {
                 counts[user._id] = feedbacks.filter(feedback => feedback.userId === user._id).length;
-                console.log(`User ID: ${user._id}, Feedback Count: ${counts[user._id]}`); // Log count for each user
+                // console.log(`User ID: ${user._id}, Feedback Count: ${counts[user._id]}`); // Log count for each user
             });
             setFeedbackCounts(counts);
         } catch (error) {
