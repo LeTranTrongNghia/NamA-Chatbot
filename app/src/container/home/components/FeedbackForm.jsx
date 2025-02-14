@@ -71,7 +71,7 @@ export function CustomerFeedbackForm() {
                     className="p-2 hover:bg-blue-100"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Chat
+                    Quay lại chatbot
                 </Button>
             </div>
 
