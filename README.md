@@ -38,11 +38,11 @@ Ensure you have the following installed:
 - npm or yarn  
 
 ### **Steps to Run the Project**  
-1. **Clone the repository**  
-   ```bash
-   git clone https://github.com/LeTranTrongNghia/NamA-Chatbot.git
-   cd NamA-Chatbot
-   ```
+1. **Clone the repository**
+  ```bash
+  git clone https://github.com/LeTranTrongNghia/NamA-Chatbot.git 
+  cd NamA-Chatbot
+  ```
 2. **Install dependencies** (In both backend and frontend)
   ```bash
   cd app 
