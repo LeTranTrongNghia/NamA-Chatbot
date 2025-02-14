@@ -62,7 +62,7 @@ Ensure you have the following installed:
   npm run dev
   ```
 4. **Access the application**
-Open your browser and navigate to:
+  * Open your browser and navigate to:
   ```bash
   http://localhost:5173
   ```
